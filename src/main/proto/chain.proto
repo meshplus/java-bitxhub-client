@@ -1,0 +1,8 @@
+syntax = "proto3";
+package pb;
+
+message ChainMeta {
+    uint64 height = 1;
+    bytes block_hash = 2;
+    uint64 interchain_tx_count = 3;
+}
