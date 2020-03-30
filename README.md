@@ -3,13 +3,18 @@ Go Bitxhub Client
 
 This SDK enables Java developers to build solutions that interact with BitXHub.
 
-## Get started
+## Prepare
+You need to have the following dependencies installed on your machine.
+- [__Java8+__](https://www.oracle.com/java/technologies/javase-downloads.html)
+- [__Maven3.6+__](https://maven.apache.org/download.cgi)
+
+## Getting started
 Obtain the client SDK packages for BitXHub.
 ```shell script
 git clone https://github.com/meshplus/java-bitxhub-client.git
 ```
 
-### Install
+### Installing
 Use the `Maven` command to install the SDK.
 ```shell script
 mvn clean package -DskipTests
