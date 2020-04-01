@@ -1,6 +1,7 @@
 Java Bitxhub Client
 =====
-
+![build](https://github.com/meshplus/java-bitxhub-client/workflows/build/badge.svg)
+[![codecov](https://codecov.io/gh/meshplus/java-bitxhub-client/branch/master/graph/badge.svg)](https://codecov.io/gh/meshplus/java-bitxhub-client)
 This SDK enables Java developers to build solutions that interact with BitXHub.
 
 ## Prepare
