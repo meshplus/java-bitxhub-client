@@ -4,7 +4,7 @@
     <groupId>cn.dmlab</groupId>
     <artifactId>java-bitxhub-client</artifactId>
     <packaging>jar</packaging>
-    <version>1.0.0</version>
+    <version>v1.0.0-rc1</version>
     <name>java-bitxhub-client</name>
     <url>https://github.com/meshplus/java-bitxhub-client.git</url>
 
@@ -194,52 +194,17 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.4</version>
-                <configuration>
-                    <destFile>target/coverage-reports/jacoco-unit.exec</destFile>
-                    <dataFile>target/coverage-reports/jacoco-unit.exec</dataFile>
-                    <includes>
-                        <include>**/bitxhub/**</include>
-                    </includes>
-                    <!-- rules里面指定覆盖规则 -->
-                    <rules>
-                        <rule implementation="org.jacoco.maven.RuleConfiguration">
-                            <element>BUNDLE</element>
-                            <limits>　　
-                                <!-- 方法覆盖到50% -->
-                                <limit implementation="org.jacoco.report.check.Limit">
-                                    <counter>METHOD</counter>
-                                    <value>COVEREDRATIO</value>
-                                    <minimum>0.65</minimum>
-                                </limit>
-                                <!-- 类覆盖到100%，不能遗失任何类 -->
-                                <limit implementation="org.jacoco.report.check.Limit">
-                                    <counter>CLASS</counter>
-                                    <value>MISSEDCOUNT</value>
-                                    <maximum>0</maximum>
-                                </limit>
-                            </limits>
-                        </rule>
-                    </rules>
-                </configuration>
+                <version>0.7.6.201602180812</version>
                 <executions>
                     <execution>
-                        <id>jacoco-initialize</id>
+                        <id>pre-unit-test</id>
                         <goals>
                             <goal>prepare-agent</goal>
                         </goals>
                     </execution>
-                    <!--这个check:对代码进行检测，控制项目构建成功还是失败-->
                     <execution>
-                        <id>check</id>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                    <!--这个report:对代码进行检测，然后生成index.html在 target/site/index.html中可以查看检测的详细结果-->
-                    <execution>
-                        <id>jacoco-site</id>
-                        <phase>package</phase>
+                        <id>post-unit-test</id>
+                        <phase>test</phase>
                         <goals>
                             <goal>report</goal>
                         </goals>
