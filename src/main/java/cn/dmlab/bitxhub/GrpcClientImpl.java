@@ -160,8 +160,17 @@ public class GrpcClientImpl implements GrpcClient {
     @Override
     public Broker.Response getChainStatus() {
         Broker.Request request = Broker.Request.newBuilder()
+                .setType(Broker.Request.Type.CHAIN_STATUS)
                 .build();
-        return blockingStub.getChainStatus(request);
+        return blockingStub.getInfo(request);
+    }
+
+    @Override
+    public Broker.Response getValidators() {
+        Broker.Request request = Broker.Request.newBuilder()
+                .setType(Broker.Request.Type.VALIDATORS)
+                .build();
+        return blockingStub.getInfo(request);
     }
 
     @Override
@@ -249,8 +258,9 @@ public class GrpcClientImpl implements GrpcClient {
     @Override
     public Broker.Response getNetworkMeta() {
         Broker.Request request = Broker.Request.newBuilder()
+                .setType(Broker.Request.Type.NETWORK)
                 .build();
-        return blockingStub.getNetworkMeta(request);
+        return blockingStub.getInfo(request);
     }
 
     @Override

@@ -21,7 +21,7 @@ Use the `Maven` command to install the SDK.
 ```shell script
 mvn clean package -DskipTests
 ```
-Then you can get the `java-bitxhub-client-0.1.0-jar-with-dependencies.jar` in the `target` folder.
+Then you can get the `java-bitxhub-client-v1.0.0-rc2.jar` in the `target` folder.
 
 You're good to go, happy coding! Check out the examples for usage demonstrations.
 
