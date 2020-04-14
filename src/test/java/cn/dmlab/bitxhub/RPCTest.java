@@ -102,4 +102,10 @@ public class RPCTest {
         Assert.assertNotNull(response);
     }
 
+    @Test
+    public void getValidators() {
+        Broker.Response response = client.getValidators();
+        Assert.assertNotNull(response);
+    }
+
 }

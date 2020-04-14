@@ -90,6 +90,13 @@ public interface GrpcClient {
      */
     Broker.Response getChainStatus();
 
+    /**
+     * Get the validators from BitXHub.
+     *
+     * @return validators
+     */
+    Broker.Response getValidators();
+
 
     /**
      * Get the current network situation of BitXHub.
