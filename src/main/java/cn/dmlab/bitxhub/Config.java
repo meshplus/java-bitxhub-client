@@ -17,10 +17,6 @@ public class Config {
     private ECKeyP256 ecKey;
 
     public void checkConfig() {
-        if (ecKey == null) {
-            throw new RuntimeException("ecKeyPair key is empty");
-        }
-
         if (Strings.isNullOrEmpty(host) || port == null) {
             throw new RuntimeException("address or port is empty");
         }
