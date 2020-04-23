@@ -11,10 +11,6 @@ You need to have the following dependencies installed on your machine.
 - [__Maven3.3+__](https://maven.apache.org/download.cgi)
 
 ## Get started
-Obtain the client SDK packages for BitXHub.
-```shell script
-git clone https://github.com/meshplus/java-bitxhub-client.git
-```
 
 ### Install
 Maven
@@ -23,14 +19,14 @@ Maven
 <dependency>
   <groupId>cn.dmlab</groupId>
   <artifactId>java-bitxhub-client</artifactId>
-  <version>v1.0.0-rc2</version>
+  <version>v1.0.0-rc3</version>
 </dependency>
 ```
 
 Gradle
 
 ```
-compile group: 'cn.dmlab', name: 'java-bitxhub-client', version: 'v1.0.0-rc2'
+compile group: 'cn.dmlab', name: 'java-bitxhub-client', version: 'v1.0.0-rc3'
 ```
 
 ### Examples
@@ -50,7 +46,12 @@ SDK documentation can be viewed at [JavaDoc](https://github.com/meshplus/java-bi
 You should start [BitXHub](https://github.com/meshplus/bitxhub) before using SDK.
 
 ### Run the test
+Obtain the client SDK packages for BitXHub.
+```shell script
+git clone https://github.com/meshplus/java-bitxhub-client.git
+```
 
+Run the test
 ```shell script
 # In the BitXHub SDK Java directory
 cd java-bitxhub-client/

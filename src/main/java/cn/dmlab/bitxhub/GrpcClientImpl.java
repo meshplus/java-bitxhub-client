@@ -43,11 +43,8 @@ public class GrpcClientImpl implements GrpcClient {
         this.channel = ManagedChannelBuilder.forAddress(config.getHost(), config.getPort())
                 .usePlaintext()
                 .build();
-        blockingStub = ChainBrokerGrpc.newBlockingStub(channel)
-                .withDeadlineAfter(20, TimeUnit.SECONDS);
-        asyncStub = ChainBrokerGrpc.newStub(channel).withDeadlineAfter(20, TimeUnit.SECONDS);
-
-
+        blockingStub = ChainBrokerGrpc.newBlockingStub(channel);
+        asyncStub = ChainBrokerGrpc.newStub(channel);
     }
 
 
@@ -96,7 +93,6 @@ public class GrpcClientImpl implements GrpcClient {
                 .setSignature(transaction.getSignature())
                 .setExtra(transaction.getExtra())
                 .build();
-
 
         Broker.TransactionHashMsg transactionHashMsg = blockingStub.sendTransaction(req);
 
@@ -176,7 +172,7 @@ public class GrpcClientImpl implements GrpcClient {
     @Override
     public String deployContract(byte[] contract) {
         check(contract != null, "Contract'bytes must not be null");
-
+        check(config.getEcKey() != null, "Ecdsa key must not be null");
         // build transaction with INVOKE type.
         TransactionOuterClass.TransactionData td = TransactionOuterClass.TransactionData.newBuilder()
                 .setType(TransactionOuterClass.TransactionData.Type.INVOKE)
@@ -202,6 +198,7 @@ public class GrpcClientImpl implements GrpcClient {
     public ReceiptOuterClass.Receipt invokeContract(TransactionOuterClass.TransactionData.VMType vmType, String contractAddress, String method, ArgOuterClass.Arg... args) {
         check(!Strings.isNullOrEmpty(contractAddress), "Contract address must not be null or empty");
         check(!Strings.isNullOrEmpty(method), "Method must not be null or empty");
+        check(config.getEcKey() != null, "Ecdsa key must not be null");
 
         TransactionOuterClass.InvokePayload invokePayload = TransactionOuterClass.InvokePayload.newBuilder()
                 .setMethod(method)
