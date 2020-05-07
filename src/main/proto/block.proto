@@ -22,15 +22,3 @@ message BlockHeader {
     bytes version = 7;
     bytes interchain_index = 8;
 }
-
-message MerkleWrapper {
-    BlockHeader block_header = 1;
-    repeated bytes transaction_hashes = 2;
-    repeated Transaction transactions = 3;
-    bytes block_hash = 4;
-    map<string, bytes> signatures = 5;
-}
-
-message MerkleWrappers {
-    repeated MerkleWrapper merkles = 1;
-}

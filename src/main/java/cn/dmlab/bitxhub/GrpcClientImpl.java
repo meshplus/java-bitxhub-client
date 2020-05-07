@@ -241,13 +241,13 @@ public class GrpcClientImpl implements GrpcClient {
     }
 
     @Override
-    public Broker.GetBlocksResponse getBlocks(Long offset, Long length) {
-        check(offset >= 0, "Offset must not be negative");
-        check(length >= 0, "Length must not be negative");
+    public Broker.GetBlocksResponse getBlocks(Long start, Long end) {
+        check(start >= 0, "Start must not be negative");
+        check(end >= start, "End must not be negative");
 
         Broker.GetBlocksRequest request = Broker.GetBlocksRequest.newBuilder()
-                .setLength(length)
-                .setOffset(offset)
+                .setStart(start)
+                .setEnd(end)
                 .build();
         return blockingStub.getBlocks(request);
     }
@@ -275,34 +275,32 @@ public class GrpcClientImpl implements GrpcClient {
         return blockingStub.getChainMeta(request);
     }
 
-    /**
-     * Pier sync merkle wrapper from bitxhub.
-     */
     @Override
-    public void syncMerkleWrapper(String id, StreamObserver<Broker.Response> streamObserver) {
-        check(!Strings.isNullOrEmpty(id), "Id must not be null or empty");
-        check(Objects.nonNull(streamObserver), "StreamObserver must not be null");
-        Broker.SyncMerkleWrapperRequest request = Broker.SyncMerkleWrapperRequest.newBuilder()
-                .setAppchainId(id)
-                .build();
-        asyncStub.syncMerkleWrapper(request, streamObserver);
-    }
-
-    @Override
-    public void getMerkleWrapper(String pid, Long begin, Long end, StreamObserver<Broker.Response> streamObserver) {
+    public void getInterchainTxWrapper(String pid, Long begin, Long end, StreamObserver<Broker.InterchainTxWrapper> streamObserver) {
         check(!Strings.isNullOrEmpty(pid), "Id must not be null or empty");
-        check(begin > 0, "The number of begin must not be negative");
-        check(end >= begin, "The number of end cannot be smaller than the number of begin");
         check(Objects.nonNull(streamObserver), "StreamObserver must not be null");
-
-        Broker.GetMerkleWrapperRequest request = Broker.GetMerkleWrapperRequest.newBuilder()
+        check(begin >= 0, "begin must not be negative");
+        check(end >= begin, "End must not be negative");
+        Broker.GetInterchainTxWrapperRequest request = Broker.GetInterchainTxWrapperRequest.newBuilder()
                 .setPid(pid)
                 .setBegin(begin)
                 .setEnd(end)
                 .build();
-        asyncStub.getMerkleWrapper(request, streamObserver);
+        asyncStub.getInterchainTxWrapper(request, streamObserver);
     }
 
+    @Override
+    public void getBlockHeaders(Long begin, Long end, StreamObserver<BlockOuterClass.BlockHeader> streamObserver) {
+        check(Objects.nonNull(streamObserver), "StreamObserver must not be null");
+        check(begin >= 0, "begin must not be negative");
+        check(end >= begin, "End must not be negative");
+
+        Broker.GetBlockHeaderRequest request = Broker.GetBlockHeaderRequest.newBuilder()
+                .setBegin(begin)
+                .setEnd(end)
+                .build();
+        asyncStub.getBlockHeader(request, streamObserver);
+    }
 
     private static void check(boolean test, String message) {
         if (!test) throw new IllegalArgumentException(message);

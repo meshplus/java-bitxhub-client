@@ -14,18 +14,16 @@ service ChainBroker {
             get: "/v1/subscription"
         };
     }
-    // Pier sync merkle wrapper meta from bitxhub
-    // Request includes the appchain id
-    // Response includes MerkleWrapper struct
-    rpc SyncMerkleWrapper (SyncMerkleWrapperRequest) returns (stream Response) {
+
+    rpc GetBlockHeader (GetBlockHeaderRequest) returns (stream pb.BlockHeader) {
         option (google.api.http) = {
-            get: "/v1/sync_merkle_wrapper"
+            get: "/v1/block_header"
         };
     }
 
-    rpc GetMerkleWrapper (GetMerkleWrapperRequest) returns (stream Response) {
+    rpc GetInterchainTxWrapper (GetInterchainTxWrapperRequest) returns (stream InterchainTxWrapper) {
         option (google.api.http) = {
-            get: "/v1/merkle_wrapper"
+            get: "/v1/interchain_tx_wrapper"
         };
     }
 
@@ -79,7 +77,12 @@ service ChainBroker {
     }
 }
 
-message GetMerkleWrapperRequest {
+message GetBlockHeaderRequest {
+    uint64 begin = 1;
+    uint64 end = 2;
+}
+
+message GetInterchainTxWrapperRequest {
     uint64 begin = 1;
     uint64 end = 2;
     string pid = 3;
@@ -126,13 +129,9 @@ message SendTransactionRequest {
     bytes extra = 9;
 }
 
-message SyncMerkleWrapperRequest {
-    string appchain_id = 1;
-}
-
 message GetBlocksRequest {
-    uint64 offset = 1;
-    uint64 length = 2;
+    uint64 start = 1;
+    uint64 end = 2;
 }
 
 message GetBlocksResponse {
@@ -145,11 +144,19 @@ message SubscriptionRequest {
         EVENT = 1;
         INTERCHAIN_TX = 2;
         BLOCK_HEADER = 3;
+        INTERCHAIN_TX_WRAPPER = 4;
     }
     Type type = 1;
+    bytes extra = 2;
 }
 
 message GetTransactionResponse {
     pb.Transaction tx = 1;
     pb.TransactionMeta tx_meta = 2;
+}
+
+message InterchainTxWrapper {
+    repeated bytes transaction_hashes = 1;
+    repeated Transaction transactions = 2;
+    uint64 height = 3;
 }

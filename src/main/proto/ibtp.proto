@@ -30,8 +30,13 @@ message IBTP {
 }
 
 message payload {
-    string FID = 1;
-    string TID = 2;
+    bool encrypted = 1;
+    bytes content = 2;
+}
+
+message content {
+    string src_contract_id = 1;
+    string dst_contract_id = 2;
     string func = 3;
     repeated bytes args = 4;
     string callback = 5;

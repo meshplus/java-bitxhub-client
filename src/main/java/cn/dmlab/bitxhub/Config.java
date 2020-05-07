@@ -3,17 +3,19 @@ package cn.dmlab.bitxhub;
 
 import cn.dmlab.crypto.ecdsa.ECKeyP256;
 import com.google.common.base.Strings;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
+@Data
 @Builder
 public class Config {
     private String host;
     private Integer port;
 
-    @Setter
     private ECKeyP256 ecKey;
 
     public void checkConfig() {
