@@ -77,11 +77,11 @@ public interface GrpcClient {
     /**
      * Get blocks of the specified block height range.
      *
-     * @param offset block height offset
-     * @param length range of blocks
+     * @param start start signal
+     * @param end   end signal
      * @return blocks info
      */
-    Broker.GetBlocksResponse getBlocks(Long offset, Long length);
+    Broker.GetBlocksResponse getBlocks(Long start, Long end);
 
     /**
      * Get the status of the blockchain from BitXHub, normal or abnormal.
@@ -121,24 +121,24 @@ public interface GrpcClient {
     Chain.ChainMeta getChainMeta();
 
     /**
-     * Sync merkle wrapper from BitXHub, A merkle wrapper is a structure containing a merkle tree.
-     * Through this structure, you can quickly obtain cross-chain transactions in a block.
+     * Through the InterchainTxWrapper structure, you can quickly obtain cross-chain transactions in a block.
      *
      * @param pid            app-chain id.
+     * @param begin          begin signal
+     * @param end            end signal
      * @param streamObserver contain methods of the onNext(), onComplete(), OnError().
      * @return merkle wrappers
      */
-    void syncMerkleWrapper(String pid, StreamObserver<Broker.Response> streamObserver);
+    void getInterchainTxWrapper(String pid, Long begin, Long end, StreamObserver<Broker.InterchainTxWrapper> streamObserver);
 
     /**
-     * Get the range of merkle wrapper from BitXHub.
+     * Get the missing block header from BitXHub
      *
-     * @param pid            app-chain id
-     * @param begin          begin of the block height
-     * @param end            end of the block height
-     * @param streamObserver contain methods of the onNext(), onComplete(), OnError()
+     * @param begin          begin signal
+     * @param end            end signal
+     * @param streamObserver contain methods of the onNext(), onComplete(), OnError().
      */
-    void getMerkleWrapper(String pid, Long begin, Long end, StreamObserver<Broker.Response> streamObserver);
+    void getBlockHeaders(Long begin, Long end, StreamObserver<BlockOuterClass.BlockHeader> streamObserver);
 
     /**
      * Call this interface to deploy a WASM contract to BitXHub

@@ -36,15 +36,7 @@ public class AppchainTest {
 
     @Test
     public void registerAppchain() {
-        ArgOuterClass.Arg[] args = Types.toArgArray(
-                Types.string(""), //validators
-                Types.i32(0), //consensus_type
-                Types.string("hyperchain"), //chain_type
-                Types.string("税务链"), //name
-                Types.string("趣链税务链"), //desc
-                Types.string("1.8")); //version
-        ReceiptOuterClass.Receipt receipt = client.invokeBVMContract(BVMAddr.INTER_CHAIN_CONTRACT_ADDR, "Register", args);
-        Assert.assertNotNull(receipt);
+        ReceiptOuterClass.Receipt receipt = register();
 
         String ret = receipt.getRet().toStringUtf8();
         JSONObject jsonObject = JSONObject.parseObject(ret);
@@ -55,16 +47,7 @@ public class AppchainTest {
 
     @Test
     public void adultAppchain() {
-        ArgOuterClass.Arg[] args = Types.toArgArray(
-                Types.string(""), //validators
-                Types.i32(0), //consensus_type
-                Types.string("hyperchain"), //chain_type
-                Types.string("税务链"), //name
-                Types.string("趣链税务链"), //desc
-                Types.string("1.8")); //version
-        ReceiptOuterClass.Receipt receipt = client.invokeBVMContract(BVMAddr.INTER_CHAIN_CONTRACT_ADDR, "Register", args);
-        Assert.assertNotNull(receipt);
-
+        ReceiptOuterClass.Receipt receipt = register();
 
         String ret = receipt.getRet().toStringUtf8();
         JSONObject jsonObject = JSONObject.parseObject(ret);
@@ -72,27 +55,19 @@ public class AppchainTest {
                 Types.string(jsonObject.getString("id")), //应用链ID
                 Types.i32(1), //审核通过
                 Types.string("")); //desc
-        ReceiptOuterClass.Receipt adultReceipt = client.invokeBVMContract(BVMAddr.INTER_CHAIN_CONTRACT_ADDR, "Audit", adultArgs);
+        ReceiptOuterClass.Receipt adultReceipt = client.invokeBVMContract(BVMAddr.APPCHAIN_MANAGER_CONTRACT_ADDR, "Audit", adultArgs);
         Assert.assertNotNull(adultReceipt);
     }
 
     @Test
     public void deleteAppchain() {
-        ArgOuterClass.Arg[] args = Types.toArgArray(
-                Types.string(""), //validators
-                Types.i32(0), //consensus_type
-                Types.string("hyperchain"), //chain_type
-                Types.string("税务链"), //name
-                Types.string("趣链税务链"), //desc
-                Types.string("1.8")); //version
-        ReceiptOuterClass.Receipt receipt = client.invokeBVMContract(BVMAddr.INTER_CHAIN_CONTRACT_ADDR, "Register", args);
-        Assert.assertNotNull(receipt);
+        ReceiptOuterClass.Receipt receipt = register();
 
         String ret = receipt.getRet().toStringUtf8();
         JSONObject jsonObject = JSONObject.parseObject(ret);
         ArgOuterClass.Arg[] deleteArgs = Types.toArgArray(
                 Types.string(jsonObject.getString("id")));
-        ReceiptOuterClass.Receipt adultReceipt = client.invokeBVMContract(BVMAddr.INTER_CHAIN_CONTRACT_ADDR, "Audit", deleteArgs);
+        ReceiptOuterClass.Receipt adultReceipt = client.invokeBVMContract(BVMAddr.APPCHAIN_MANAGER_CONTRACT_ADDR, "DeleteAppchain", deleteArgs);
         Assert.assertNotNull(adultReceipt);
     }
 
@@ -102,15 +77,8 @@ public class AppchainTest {
                 new FileInputStream("target/test-classes/testdata/example.wasm"));
         String contractAddress = client.deployContract(contractBytes);
         Assert.assertNotNull(contractAddress);
-        ArgOuterClass.Arg[] args = Types.toArgArray(
-                Types.string(""), //validators
-                Types.i32(0), //consensus_type
-                Types.string("hyperchain"), //chain_type
-                Types.string("税务链"), //name
-                Types.string("趣链税务链"), //desc
-                Types.string("1.8")); //version
-        ReceiptOuterClass.Receipt receipt = client.invokeBVMContract(BVMAddr.INTER_CHAIN_CONTRACT_ADDR, "Register", args);
-        Assert.assertNotNull(receipt);
+
+        ReceiptOuterClass.Receipt receipt = register();
 
         String ret = receipt.getRet().toStringUtf8();
         JSONObject jsonObject = JSONObject.parseObject(ret);
@@ -122,6 +90,20 @@ public class AppchainTest {
                 Types.string(contractAddress));
         ReceiptOuterClass.Receipt ruleReceipt = client.invokeBVMContract(BVMAddr.RULE_MANAGER_CONTRACT_ADDR, "RegisterRule", ruleArgs);
         Assert.assertNotNull(ruleReceipt);
-
     }
+
+    ReceiptOuterClass.Receipt register() {
+        ArgOuterClass.Arg[] args = Types.toArgArray(
+                Types.string(""), //validators
+                Types.i32(0), //consensus_type
+                Types.string("hyperchain"), //chain_type
+                Types.string("税务链"), //name
+                Types.string("趣链税务链"), //desc
+                Types.string("1.8"),//version
+                Types.string("")); //public key
+        ReceiptOuterClass.Receipt receipt = client.invokeBVMContract(BVMAddr.APPCHAIN_MANAGER_CONTRACT_ADDR, "Register", args);
+        Assert.assertNotNull(receipt);
+        return receipt;
+    }
+
 }

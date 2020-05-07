@@ -99,5 +99,3 @@ tcert.pub
 *.log
 log.*
 *.log.*
-!/src/main/java/cn/hyperchain/hyperchain/rpc/function/FuncParamReal.java
-!/src/main/java/cn/hyperchain/hyperchain/rpc/function/EncryptUtil.java
