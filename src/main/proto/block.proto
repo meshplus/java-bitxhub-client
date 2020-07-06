@@ -20,5 +20,4 @@ message BlockHeader {
     bytes parent_hash = 5;
     int64 timestamp = 6;
     bytes version = 7;
-    bytes interchain_index = 8;
 }

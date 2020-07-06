@@ -19,14 +19,14 @@ Maven
 <dependency>
   <groupId>cn.dmlab</groupId>
   <artifactId>java-bitxhub-client</artifactId>
-  <version>v1.0.0-rc4</version>
+  <version>v1.0.0-rc5</version>
 </dependency>
 ```
 
 Gradle
 
 ```
-compile group: 'cn.dmlab', name: 'java-bitxhub-client', version: 'v1.0.0-rc4'
+compile group: 'cn.dmlab', name: 'java-bitxhub-client', version: 'v1.0.0-rc5'
 ```
 
 ### Examples
