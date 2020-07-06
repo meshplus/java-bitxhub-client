@@ -156,7 +156,8 @@ message GetTransactionResponse {
 }
 
 message InterchainTxWrapper {
-    repeated bytes transaction_hashes = 1;
-    repeated Transaction transactions = 2;
-    uint64 height = 3;
+    repeated bytes l2Roots = 1;
+    repeated bytes transaction_hashes = 2;
+    repeated Transaction transactions = 3;
+    uint64 height = 4;
 }
