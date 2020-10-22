@@ -51,7 +51,7 @@ public class RPCTest {
                 .setTo(ByteString.copyFrom(to))
                 .setTimestamp(Utils.genTimestamp())
                 .setNonce(Utils.genNonce())
-                .setData(TransactionOuterClass.TransactionData.newBuilder().setAmount(100000L).build())
+                .setPayload(TransactionOuterClass.TransactionData.newBuilder().setAmount(100000L).build().toByteString())
                 .build();
         TransactionOuterClass.Transaction signedTx = SignUtils.sign(unsignedTx, config.getEcKey());
         ReceiptOuterClass.Receipt receipt = client.sendTransactionWithReceipt(signedTx);
@@ -70,9 +70,9 @@ public class RPCTest {
                 .setTo(ByteString.copyFrom(to))
                 .setTimestamp(Utils.genTimestamp())
                 .setNonce(Utils.genNonce())
-                .setData(TransactionOuterClass.TransactionData.newBuilder()
+                .setPayload(TransactionOuterClass.TransactionData.newBuilder()
                         .setAmount(100000L)
-                        .build())
+                        .build().toByteString())
                 .build();
         TransactionOuterClass.Transaction signedTx = SignUtils.sign(unsignedTx, config.getEcKey());
         String txHash = client.sendTransaction(signedTx);
@@ -89,7 +89,7 @@ public class RPCTest {
                 .setTo(ByteString.copyFrom(to))
                 .setTimestamp(Utils.genTimestamp())
                 .setNonce(Utils.genNonce())
-                .setData(TransactionOuterClass.TransactionData.newBuilder().setAmount(100000L).build())
+                .setPayload(TransactionOuterClass.TransactionData.newBuilder().setAmount(100000L).build().toByteString())
                 .build();
         TransactionOuterClass.Transaction signedTx = SignUtils.sign(unsignedTx, config.getEcKey());
         String txHash = client.sendTransaction(signedTx);

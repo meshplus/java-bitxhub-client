@@ -46,7 +46,7 @@ public class SyncTest {
                 .setTo(ByteString.copyFrom(to))
                 .setTimestamp(Utils.genTimestamp())
                 .setNonce(Utils.genNonce())
-                .setData(TransactionOuterClass.TransactionData.newBuilder().setAmount(100000L).build())
+                .setPayload(TransactionOuterClass.TransactionData.newBuilder().setAmount(100000L).build().toByteString())
                 .build();
         TransactionOuterClass.Transaction signedTx = SignUtils.sign(unsignedTx, config.getEcKey());
         String txHash = client.sendTransaction(signedTx);
@@ -56,9 +56,9 @@ public class SyncTest {
     @Test
     public void getInterchainTxWrapper() throws InterruptedException {
         CountDownLatch asyncLatch = new CountDownLatch(1);
-        StreamObserver<Broker.InterchainTxWrapper> observer = new StreamObserver<Broker.InterchainTxWrapper>() {
+        StreamObserver<Broker.InterchainTxWrappers> observer = new StreamObserver<Broker.InterchainTxWrappers>() {
             @Override
-            public void onNext(Broker.InterchainTxWrapper interchainTxWrapper) {
+            public void onNext(Broker.InterchainTxWrappers interchainTxWrapper) {
                 Assert.assertNotNull(interchainTxWrapper);
                 asyncLatch.countDown();
             }
@@ -75,7 +75,7 @@ public class SyncTest {
             }
         };
 
-        client.getInterchainTxWrapper("node1", 1L, 2L, observer);
+        client.getInterchainTxWrappers("node1", 1L, 2L, observer);
         sendInterchaintx();
         asyncLatch.await();
     }

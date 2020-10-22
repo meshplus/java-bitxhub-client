@@ -1,6 +1,7 @@
 package cn.dmlab.bitxhub;
 
 import cn.dmlab.crypto.ecdsa.ECKeyP256;
+import cn.dmlab.crypto.ecdsa.ECKeyS256;
 import io.grpc.stub.StreamObserver;
 import pb.*;
 
@@ -26,7 +27,7 @@ public interface GrpcClient {
      *
      * @param ecKey ecdsa key
      */
-    void setECKey(ECKeyP256 ecKey);
+    void setECKey(ECKeyS256 ecKey);
 
     /**
      * Send a signed transaction to BitXHub. If the signature is illegal,
@@ -129,7 +130,7 @@ public interface GrpcClient {
      * @param streamObserver contain methods of the onNext(), onComplete(), OnError().
      * @return merkle wrappers
      */
-    void getInterchainTxWrapper(String pid, Long begin, Long end, StreamObserver<Broker.InterchainTxWrapper> streamObserver);
+    void getInterchainTxWrappers(String pid, Long begin, Long end, StreamObserver<Broker.InterchainTxWrappers> streamObserver);
 
     /**
      * Get the missing block header from BitXHub

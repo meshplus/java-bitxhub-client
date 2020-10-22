@@ -6,9 +6,20 @@ package pb;
 message IBTP {
     enum Type {
         INTERCHAIN = 0;
-        RECEIPT = 1;
-        CONFIRM = 2;
+        RECEIPT_SUCCESS = 1;
+        RECEIPT_FAILURE = 2;
+        ASSET_EXCHANGE_INIT = 3;
+        ASSET_EXCHANGE_REDEEM = 4;
+        ASSET_EXCHANGE_REFUND = 5;
+        ASSET_EXCHANGE_RECEIPT = 6;
     }
+
+    enum Category {
+        REQUEST = 0;
+        RESPONSE = 1;
+        UNKNOWN = 2;
+    }
+
     // ID of sending chain
     string from = 1;
     // ID of receiving chain
@@ -23,10 +34,12 @@ message IBTP {
     bytes proof = 6;
     // Encoded content used by inter-chain
     bytes payload = 7;
+    // info about other txs in the same group
+    map<string, uint64> group = 8;
     // Message version
-    string version = 8;
+    string version = 9;
     // Self-defined fields used by app-chain
-    bytes extra = 9;
+    bytes extra = 10;
 }
 
 message payload {
@@ -40,4 +53,8 @@ message content {
     string func = 3;
     repeated bytes args = 4;
     string callback = 5;
+}
+
+message IBTPs {
+    repeated IBTP ibtps = 1;
 }

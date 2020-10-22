@@ -2,6 +2,7 @@ package cn.dmlab.bitxhub;
 
 
 import cn.dmlab.crypto.ecdsa.ECKeyP256;
+import cn.dmlab.crypto.ecdsa.ECKeyS256;
 import com.google.common.base.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +17,7 @@ public class Config {
     private String host;
     private Integer port;
 
-    private ECKeyP256 ecKey;
+    private ECKeyS256 ecKey;
 
     public void checkConfig() {
         if (Strings.isNullOrEmpty(host) || port == null) {
@@ -30,7 +31,7 @@ public class Config {
     public static Config defaultConfig() {
         String host = "localhost";
         Integer port = 60011;
-        ECKeyP256 ecKey = new ECKeyP256();
+        ECKeyS256 ecKey = new ECKeyS256();
         return new Config(host, port, ecKey);
     }
 }

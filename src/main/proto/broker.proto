@@ -21,15 +21,22 @@ service ChainBroker {
         };
     }
 
-    rpc GetInterchainTxWrapper (GetInterchainTxWrapperRequest) returns (stream InterchainTxWrapper) {
+    rpc GetInterchainTxWrappers (GetInterchainTxWrappersRequest) returns (stream InterchainTxWrappers) {
         option (google.api.http) = {
-            get: "/v1/interchain_tx_wrapper"
+            get: "/v1/interchain_tx_wrappers"
         };
     }
 
-    rpc SendTransaction (SendTransactionRequest) returns (TransactionHashMsg) {
+    rpc SendTransaction (pb.Transaction) returns (TransactionHashMsg) {
         option (google.api.http) = {
             post: "/v1/transaction"
+            body: "*"
+        };
+    }
+
+    rpc SendView (pb.Transaction) returns (pb.Receipt) {
+        option (google.api.http) = {
+            post: "/v1/view"
             body: "*"
         };
     }
@@ -75,6 +82,24 @@ service ChainBroker {
             get: "/v1/account_balance/{address}"
         };
     }
+
+    rpc GetMultiSigns (GetMultiSignsRequest) returns (SignResponse) {
+        option (google.api.http) = {
+            get: "/v1/multi_sign/{content}"
+        };
+    }
+
+    rpc GetTPS(GetTPSRequest) returns (Response) {
+        option (google.api.http) = {
+            get: "/v1/tps/{begin}/{end}"
+        };
+    }
+
+    rpc GetPendingNonceByAccount(Address) returns (Response) {
+        option (google.api.http) = {
+            get: "/v1/pendingNonce/{address}"
+        };
+    }
 }
 
 message GetBlockHeaderRequest {
@@ -82,7 +107,7 @@ message GetBlockHeaderRequest {
     uint64 end = 2;
 }
 
-message GetInterchainTxWrapperRequest {
+message GetInterchainTxWrappersRequest {
     uint64 begin = 1;
     uint64 end = 2;
     string pid = 3;
@@ -114,19 +139,12 @@ message Response {
     bytes data = 1;
 }
 
-message Address {
-    string address = 1;
+message SignResponse {
+    map<string, bytes> sign = 1;
 }
 
-message SendTransactionRequest {
-    bytes version = 1;
-    bytes from = 2;
-    bytes to = 3;
-    int64 timestamp = 4;
-    pb.TransactionData data = 6;
-    int64 nonce = 7;
-    bytes signature = 8;
-    bytes extra = 9;
+message Address {
+    string address = 1;
 }
 
 message GetBlocksRequest {
@@ -145,9 +163,20 @@ message SubscriptionRequest {
         INTERCHAIN_TX = 2;
         BLOCK_HEADER = 3;
         INTERCHAIN_TX_WRAPPER = 4;
+        UNION_INTERCHAIN_TX_WRAPPER = 5;
     }
     Type type = 1;
     bytes extra = 2;
+}
+
+message GetMultiSignsRequest {
+    enum Type {
+        ASSET_EXCHANGE = 0;
+        IBTP = 1;
+        BLOCK_HEADER = 2;
+    }
+    Type type = 1;
+    string content = 2;
 }
 
 message GetTransactionResponse {
@@ -160,4 +189,13 @@ message InterchainTxWrapper {
     repeated bytes transaction_hashes = 2;
     repeated Transaction transactions = 3;
     uint64 height = 4;
+}
+
+message InterchainTxWrappers {
+    repeated InterchainTxWrapper interchainTxWrappers = 1;
+}
+
+message GetTPSRequest {
+    uint64 begin = 1;
+    uint64 end = 2;
 }

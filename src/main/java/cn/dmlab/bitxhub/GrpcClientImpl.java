@@ -1,6 +1,7 @@
 package cn.dmlab.bitxhub;
 
 import cn.dmlab.crypto.ecdsa.ECKeyP256;
+import cn.dmlab.crypto.ecdsa.ECKeyS256;
 import cn.dmlab.utils.ByteUtil;
 import cn.dmlab.utils.SignUtils;
 import cn.dmlab.utils.Utils;
@@ -71,7 +72,7 @@ public class GrpcClientImpl implements GrpcClient {
     }
 
     @Override
-    public void setECKey(ECKeyP256 ecKey) {
+    public void setECKey(ECKeyS256 ecKey) {
         check(!Objects.isNull(ecKey), "Ecdsa key  must not be null");
         this.config.setEcKey(ecKey);
     }
@@ -83,18 +84,7 @@ public class GrpcClientImpl implements GrpcClient {
         check(!Objects.isNull(transaction.getTo()), "To address must not be null");
         check(!Objects.isNull(transaction.getSignature()), "Signature must not be null");
 
-        Broker.SendTransactionRequest req = Broker.SendTransactionRequest.newBuilder()
-                .setVersion(transaction.getVersion())
-                .setFrom(transaction.getFrom())
-                .setTo(transaction.getTo())
-                .setTimestamp(transaction.getTimestamp())
-                .setData(transaction.getData())
-                .setNonce(transaction.getNonce())
-                .setSignature(transaction.getSignature())
-                .setExtra(transaction.getExtra())
-                .build();
-
-        Broker.TransactionHashMsg transactionHashMsg = blockingStub.sendTransaction(req);
+        Broker.TransactionHashMsg transactionHashMsg = blockingStub.sendTransaction(transaction);
 
         if (transactionHashMsg == null) {
             log.warn("transactionHashMsg is null");
@@ -171,7 +161,7 @@ public class GrpcClientImpl implements GrpcClient {
 
     @Override
     public String deployContract(byte[] contract) {
-        check(contract != null, "Contract'bytes must not be null");
+        check(contract != null, "Contract bytes must not be null");
         check(config.getEcKey() != null, "Ecdsa key must not be null");
         // build transaction with INVOKE type.
         TransactionOuterClass.TransactionData td = TransactionOuterClass.TransactionData.newBuilder()
@@ -185,7 +175,7 @@ public class GrpcClientImpl implements GrpcClient {
                 .setTo(ByteString.copyFrom(new byte[20])) // set to_address 0
                 .setNonce(Utils.genNonce())
                 .setTimestamp(Utils.genTimestamp())
-                .setData(td)
+                .setPayload(td.toByteString())
                 .build();
         TransactionOuterClass.Transaction signedTx = SignUtils.sign(tx, config.getEcKey());
 
@@ -219,7 +209,7 @@ public class GrpcClientImpl implements GrpcClient {
         TransactionOuterClass.Transaction tx = TransactionOuterClass.Transaction.newBuilder()
                 .setFrom(ByteString.copyFrom(config.getEcKey().getAddress()))
                 .setTo(ByteString.copyFrom(ByteUtil.hexStringToBytes(contractAddress)))
-                .setData(td)
+                .setPayload(td.toByteString())
                 .setTimestamp(Utils.genTimestamp())
                 .setNonce(Utils.genNonce())
                 .build();
@@ -276,17 +266,17 @@ public class GrpcClientImpl implements GrpcClient {
     }
 
     @Override
-    public void getInterchainTxWrapper(String pid, Long begin, Long end, StreamObserver<Broker.InterchainTxWrapper> streamObserver) {
+    public void getInterchainTxWrappers(String pid, Long begin, Long end, StreamObserver<Broker.InterchainTxWrappers> streamObserver) {
         check(!Strings.isNullOrEmpty(pid), "Id must not be null or empty");
         check(Objects.nonNull(streamObserver), "StreamObserver must not be null");
         check(begin >= 0, "begin must not be negative");
         check(end >= begin, "End must not be negative");
-        Broker.GetInterchainTxWrapperRequest request = Broker.GetInterchainTxWrapperRequest.newBuilder()
+        Broker.GetInterchainTxWrappersRequest request = Broker.GetInterchainTxWrappersRequest.newBuilder()
                 .setPid(pid)
                 .setBegin(begin)
                 .setEnd(end)
                 .build();
-        asyncStub.getInterchainTxWrapper(request, streamObserver);
+        asyncStub.getInterchainTxWrappers(request, streamObserver);
     }
 
     @Override
