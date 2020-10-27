@@ -1,8 +1,8 @@
 package cn.dmlab.bitxhub;
 
-import cn.dmlab.crypto.ecdsa.ECKeyP256;
 import cn.dmlab.crypto.ecdsa.ECKeyS256;
 import io.grpc.stub.StreamObserver;
+import org.web3j.crypto.ECKeyPair;
 import pb.*;
 
 
@@ -20,7 +20,7 @@ public interface GrpcClient {
      * @param type     subscribe type
      * @param observer contain methods of the onNext(), onComplete(), OnError().
      */
-    void subscribe(Broker.SubscriptionRequest.Type type, StreamObserver<Broker.Response> observer);
+    void subscribe(pb.Broker.SubscriptionRequest.Type type, StreamObserver<Broker.Response> observer);
 
     /**
      * Reset ecdsa key.
@@ -36,8 +36,16 @@ public interface GrpcClient {
      * @param transaction Unsigned transaction
      * @return tx hash
      */
-    String sendTransaction(TransactionOuterClass.Transaction transaction);
+    String sendTransaction(TransactionOuterClass.Transaction transaction, TransactOpts opts);
 
+
+    /**
+     *  returns the latest nonce of an account in the pending status,
+     * 	and it should be the nonce for next transaction
+     * @param account
+     * @return
+     */
+    long getPendingNonceByAccount(String account);
     /**
      * Get the receipt by transaction hash,
      * the status of the receipt is a sign of whether the transaction is successful.
@@ -61,7 +69,7 @@ public interface GrpcClient {
      * @param transaction Unsigned transaction
      * @return tx receipt
      */
-    ReceiptOuterClass.Receipt sendTransactionWithReceipt(TransactionOuterClass.Transaction transaction);
+    ReceiptOuterClass.Receipt sendTransactionWithReceipt(TransactionOuterClass.Transaction transaction, TransactOpts opts);
 
 
     /**

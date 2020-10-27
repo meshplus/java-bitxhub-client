@@ -25,7 +25,7 @@ public class SubscribeTest {
     private GrpcClient client;
 
     private Config config = Config.defaultConfig();
-    byte[] from = config.getEcKey().getAddress();
+    byte[] from = config.getAddress();
     byte[] to = new ECKeyP256().getAddress();
 
     @Before
@@ -43,11 +43,10 @@ public class SubscribeTest {
                 .setFrom(ByteString.copyFrom(from))
                 .setTo(ByteString.copyFrom(to))
                 .setTimestamp(Utils.genTimestamp())
-                .setNonce(Utils.genNonce())
                 .setPayload(TransactionOuterClass.TransactionData.newBuilder().setAmount(100000L).build().toByteString())
                 .build();
         TransactionOuterClass.Transaction signedTx = SignUtils.sign(unsignedTx, config.getEcKey());
-        String txHash = client.sendTransaction(signedTx);
+        String txHash = client.sendTransaction(signedTx, null);
         Assert.assertNotNull(txHash);
     }
 

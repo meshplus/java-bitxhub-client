@@ -193,7 +193,7 @@ public class ByteUtil {
     }
 
     public static String toHexStringWithOx(byte[] data) {
-        return "0x" + toHexString(data);
+        return "0x" + toHexString(data).toUpperCase();
     }
 
     public static String byteToHexString(byte[] data) {

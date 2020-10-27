@@ -27,7 +27,7 @@ public class SyncTest {
     private GrpcClient client;
 
     private Config config = Config.defaultConfig();
-    byte[] from = config.getEcKey().getAddress();
+    byte[] from = config.getAddress();
     byte[] to = new ECKeyP256().getAddress();
 
     @Before
@@ -45,11 +45,9 @@ public class SyncTest {
                 .setFrom(ByteString.copyFrom(from))
                 .setTo(ByteString.copyFrom(to))
                 .setTimestamp(Utils.genTimestamp())
-                .setNonce(Utils.genNonce())
                 .setPayload(TransactionOuterClass.TransactionData.newBuilder().setAmount(100000L).build().toByteString())
                 .build();
-        TransactionOuterClass.Transaction signedTx = SignUtils.sign(unsignedTx, config.getEcKey());
-        String txHash = client.sendTransaction(signedTx);
+        String txHash = client.sendTransaction(unsignedTx, null);
         Assert.assertNotNull(txHash);
     }
 
@@ -75,7 +73,9 @@ public class SyncTest {
             }
         };
 
-        client.getInterchainTxWrappers("node1", 1L, 2L, observer);
+        Chain.ChainMeta chainMeta = client.getChainMeta();
+
+        client.getInterchainTxWrappers("node1", chainMeta.getHeight(), chainMeta.getHeight() + 100, observer);
         sendInterchaintx();
         asyncLatch.await();
     }
@@ -123,12 +123,6 @@ public class SyncTest {
         String ret = receipt.getRet().toStringUtf8();
         JSONObject jsonObject = JSONObject.parseObject(ret);
         String appchainID = jsonObject.getString("id");
-        ArgOuterClass.Arg[] adultArgs = Types.toArgArray(
-                Types.string(appchainID), //应用链ID
-                Types.i32(1), //审核通过
-                Types.string("")); //desc
-        ReceiptOuterClass.Receipt adultReceipt = client.invokeBVMContract(BVMAddr.APPCHAIN_MANAGER_CONTRACT_ADDR, "Audit", adultArgs);
-        Assert.assertNotNull(adultReceipt);
 
         byte[] contractBytes = new byte[0];
         try {

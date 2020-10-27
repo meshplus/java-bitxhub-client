@@ -1,6 +1,7 @@
 package cn.dmlab.crypto;
 
 import com.google.common.hash.Hashing;
+import org.web3j.crypto.Hash;
 
 import static java.util.Arrays.copyOfRange;
 
@@ -25,7 +26,9 @@ public class HashUtil {
      * @return - 20 right bytes of the hash keccak of the data
      */
     public static byte[] sha3omit12(byte[] input) {
-        byte[] hash = sha3(input);
+        byte[] hash = Hash.sha3(input);
         return copyOfRange(hash, 12, hash.length);
     }
+
+
 }

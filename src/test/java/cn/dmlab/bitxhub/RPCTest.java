@@ -1,6 +1,7 @@
 package cn.dmlab.bitxhub;
 
 import cn.dmlab.crypto.ecdsa.ECKeyP256;
+import cn.dmlab.crypto.ecdsa.ECKeyS256;
 import cn.dmlab.utils.ByteUtil;
 import cn.dmlab.utils.SignUtils;
 import cn.dmlab.utils.Utils;
@@ -24,7 +25,7 @@ public class RPCTest {
     private GrpcClient client;
 
     private Config config = Config.defaultConfig();
-    byte[] from = config.getEcKey().getAddress();
+    byte[] from = config.getAddress();
     byte[] to = new ECKeyP256().getAddress();
 
     @Before
@@ -50,11 +51,9 @@ public class RPCTest {
                 .setFrom(ByteString.copyFrom(from))
                 .setTo(ByteString.copyFrom(to))
                 .setTimestamp(Utils.genTimestamp())
-                .setNonce(Utils.genNonce())
                 .setPayload(TransactionOuterClass.TransactionData.newBuilder().setAmount(100000L).build().toByteString())
                 .build();
-        TransactionOuterClass.Transaction signedTx = SignUtils.sign(unsignedTx, config.getEcKey());
-        ReceiptOuterClass.Receipt receipt = client.sendTransactionWithReceipt(signedTx);
+        ReceiptOuterClass.Receipt receipt = client.sendTransactionWithReceipt(unsignedTx, null);
 
         Broker.GetTransactionResponse transactionResponse = client.getTransaction(ByteUtil.toHexStringWithOx(receipt.getTxHash().toByteArray()));
 
@@ -69,16 +68,14 @@ public class RPCTest {
                 .setFrom(ByteString.copyFrom(from))
                 .setTo(ByteString.copyFrom(to))
                 .setTimestamp(Utils.genTimestamp())
-                .setNonce(Utils.genNonce())
                 .setPayload(TransactionOuterClass.TransactionData.newBuilder()
                         .setAmount(100000L)
                         .build().toByteString())
                 .build();
-        TransactionOuterClass.Transaction signedTx = SignUtils.sign(unsignedTx, config.getEcKey());
-        String txHash = client.sendTransaction(signedTx);
+        String txHash = client.sendTransaction(unsignedTx, null);
         ReceiptOuterClass.Receipt receipt = client.getReceipt(txHash);
-        Assert.assertEquals(ByteUtil.toHexStringWithOx(receipt.getTxHash().toByteArray()), txHash);
 
+        Assert.assertTrue(ByteUtil.toHexStringWithOx(receipt.getTxHash().toByteArray()).equalsIgnoreCase(txHash));
     }
 
 
@@ -88,11 +85,9 @@ public class RPCTest {
                 .setFrom(ByteString.copyFrom(from))
                 .setTo(ByteString.copyFrom(to))
                 .setTimestamp(Utils.genTimestamp())
-                .setNonce(Utils.genNonce())
                 .setPayload(TransactionOuterClass.TransactionData.newBuilder().setAmount(100000L).build().toByteString())
                 .build();
-        TransactionOuterClass.Transaction signedTx = SignUtils.sign(unsignedTx, config.getEcKey());
-        String txHash = client.sendTransaction(signedTx);
+        String txHash = client.sendTransaction(unsignedTx, null);
         Assert.assertNotNull(txHash);
     }
 
@@ -107,5 +102,4 @@ public class RPCTest {
         Broker.Response response = client.getValidators();
         Assert.assertNotNull(response);
     }
-
 }

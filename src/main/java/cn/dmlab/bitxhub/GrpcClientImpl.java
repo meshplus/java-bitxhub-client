@@ -1,6 +1,5 @@
 package cn.dmlab.bitxhub;
 
-import cn.dmlab.crypto.ecdsa.ECKeyP256;
 import cn.dmlab.crypto.ecdsa.ECKeyS256;
 import cn.dmlab.utils.ByteUtil;
 import cn.dmlab.utils.SignUtils;
@@ -15,11 +14,14 @@ import lombok.extern.slf4j.Slf4j;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.RetryPolicy;
 import net.jodah.failsafe.function.CheckedSupplier;
-import pb.*;
 
+import java.math.BigInteger;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+
+import org.web3j.crypto.Keys;
+import pb.*;
 
 
 @Slf4j
@@ -79,12 +81,33 @@ public class GrpcClientImpl implements GrpcClient {
 
 
     @Override
-    public String sendTransaction(TransactionOuterClass.Transaction transaction) {
+    public String sendTransaction(TransactionOuterClass.Transaction transaction, TransactOpts opts) {
         check(!Objects.isNull(transaction.getFrom()), "From address must not be null");
         check(!Objects.isNull(transaction.getTo()), "To address must not be null");
         check(!Objects.isNull(transaction.getSignature()), "Signature must not be null");
 
-        Broker.TransactionHashMsg transactionHashMsg = blockingStub.sendTransaction(transaction);
+        if (opts == null) {
+            opts = new TransactOpts();
+            opts.setFrom(Keys.toChecksumAddress(ByteUtil.toHex(transaction.getFrom().toByteArray())));
+        }
+
+        long nonce;
+        if (opts.getNormalNonce() != 0 && opts.getIBTPNonce() != 0) {
+            log.error("can't set ibtp nonce and normal nonce at the same time");
+            return null;
+        }
+        if (opts.getNormalNonce() == 0 && opts.getIBTPNonce() == 0) {
+            nonce = this.getPendingNonceByAccount(opts.getFrom());
+        } else {
+            if (opts.getIBTPNonce() != 0) {
+                nonce = opts.getIBTPNonce();
+            } else {
+                nonce = opts.getNormalNonce();
+            }
+        }
+        transaction = transaction.toBuilder().setNonce(nonce).build();
+        TransactionOuterClass.Transaction signedTx = SignUtils.sign(transaction, config.getEcKey());
+        Broker.TransactionHashMsg transactionHashMsg = blockingStub.sendTransaction(signedTx);
 
         if (transactionHashMsg == null) {
             log.warn("transactionHashMsg is null");
@@ -93,10 +116,17 @@ public class GrpcClientImpl implements GrpcClient {
         return transactionHashMsg.getTxHash();
     }
 
+    @Override
+    public long getPendingNonceByAccount(String account) {
+        Broker.Response pendingNonceByAccount = blockingStub.getPendingNonceByAccount(Broker.Address.newBuilder().setAddress(account).build());
+        BigInteger nonce = new BigInteger(pendingNonceByAccount.getData().toStringUtf8());
+        return nonce.longValue();
+    }
+
 
     @Override
-    public ReceiptOuterClass.Receipt sendTransactionWithReceipt(TransactionOuterClass.Transaction transaction) {
-        String txHash = this.sendTransaction(transaction);
+    public ReceiptOuterClass.Receipt sendTransactionWithReceipt(TransactionOuterClass.Transaction transaction, TransactOpts opts) {
+        String txHash = this.sendTransaction(transaction, opts);
         return this.getReceipt(txHash);
     }
 
@@ -171,15 +201,14 @@ public class GrpcClientImpl implements GrpcClient {
                 .build();
 
         TransactionOuterClass.Transaction tx = TransactionOuterClass.Transaction.newBuilder()
-                .setFrom(ByteString.copyFrom(config.getEcKey().getAddress()))
+                .setFrom(ByteString.copyFrom(config.getAddress()))
                 .setTo(ByteString.copyFrom(new byte[20])) // set to_address 0
                 .setNonce(Utils.genNonce())
                 .setTimestamp(Utils.genTimestamp())
                 .setPayload(td.toByteString())
                 .build();
-        TransactionOuterClass.Transaction signedTx = SignUtils.sign(tx, config.getEcKey());
 
-        ReceiptOuterClass.Receipt receipt = this.sendTransactionWithReceipt(signedTx);
+        ReceiptOuterClass.Receipt receipt = this.sendTransactionWithReceipt(tx, null);
 
         return ByteUtil.toHexStringWithOx(receipt.getRet().toByteArray());
     }
@@ -207,15 +236,13 @@ public class GrpcClientImpl implements GrpcClient {
                 .build();
 
         TransactionOuterClass.Transaction tx = TransactionOuterClass.Transaction.newBuilder()
-                .setFrom(ByteString.copyFrom(config.getEcKey().getAddress()))
+                .setFrom(ByteString.copyFrom(config.getAddress()))
                 .setTo(ByteString.copyFrom(ByteUtil.hexStringToBytes(contractAddress)))
                 .setPayload(td.toByteString())
                 .setTimestamp(Utils.genTimestamp())
-                .setNonce(Utils.genNonce())
                 .build();
 
-        TransactionOuterClass.Transaction signedTx = SignUtils.sign(tx, config.getEcKey());
-        return this.sendTransactionWithReceipt(signedTx);
+        return this.sendTransactionWithReceipt(tx, null);
     }
 
     @Override

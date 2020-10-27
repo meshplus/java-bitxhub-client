@@ -4,7 +4,9 @@ import cn.dmlab.crypto.HashUtil;
 import cn.dmlab.crypto.ecdsa.ECKeyP256;
 import cn.dmlab.crypto.ecdsa.ECKeyS256;
 import com.google.protobuf.ByteString;
-import pb.TransactionOuterClass;
+import org.web3j.crypto.ECKeyPair;
+import org.web3j.crypto.Sign;
+import pb.*;
 
 public class SignUtils {
     /**
@@ -16,10 +18,11 @@ public class SignUtils {
      */
     public static TransactionOuterClass.Transaction sign(TransactionOuterClass.Transaction unsignedTx
             , ECKeyS256 ecKeyS256) {
-        byte[] signMessage = HashUtil.sha3(needToHash(unsignedTx).getBytes(Utils.DEFAULT_CHARSET));
+        byte[] txHash = needToHash(unsignedTx);
+        byte[] signMessage = HashUtil.sha3(txHash);
         ECKeyS256.ECDSASignature sig = ecKeyS256.sign(signMessage);
         return unsignedTx.toBuilder()
-                .setTransactionHash(ByteString.copyFrom(new byte[32])) //set tx hash
+                .setTransactionHash(ByteString.copyFrom(txHash)) //set tx hash
                 .setSignature(ByteString.copyFrom(sig.toByteArray()))
                 .build();
     }
@@ -33,22 +36,47 @@ public class SignUtils {
      */
     public static TransactionOuterClass.Transaction sign(TransactionOuterClass.Transaction unsignedTx
             , ECKeyP256 ecKey) {
-        byte[] signMessage = HashUtil.sha3(needToHash(unsignedTx).getBytes(Utils.DEFAULT_CHARSET));
+        byte[] signMessage = HashUtil.sha3(needToHash(unsignedTx));
         ECKeyP256.ECDSASignature sig = ecKey.sign(signMessage);
         return unsignedTx.toBuilder()
-                .setTransactionHash(ByteString.copyFrom(new byte[32])) //set tx hash
+                .setTransactionHash(ByteString.copyFrom(needToHash(unsignedTx))) //set tx hash
                 .setSignature(ByteString.copyFrom(sig.toByteArray(ecKey.getPubKey())))
                 .build();
     }
 
-    public static String needToHash(TransactionOuterClass.Transaction unsignedTx) {
-        String signMessage = String.format("from=%s&to=%s&timestamp=%d&nonce=%d&data=%s",
-                ByteUtil.toHexStringWithOx(unsignedTx.getFrom().toByteArray()),
-                ByteUtil.toHexStringWithOx(unsignedTx.getTo().toByteArray()),
-                unsignedTx.getTimestamp(),
-                unsignedTx.getNonce(),
-                ByteUtil.toHexString(unsignedTx.getData().toByteArray()));
-        return signMessage;
+    public static byte[] needToHash(TransactionOuterClass.Transaction unsignedTx) {
+        TransactionOuterClass.Transaction tx = TransactionOuterClass.Transaction.newBuilder()
+                .setFrom(unsignedTx.getFrom())
+                .setTo(unsignedTx.getTo())
+                .setTimestamp(unsignedTx.getTimestamp())
+                .setPayload(unsignedTx.getPayload())
+                .setNonce(unsignedTx.getNonce())
+                .setAmount(unsignedTx.getAmount()).build();
+        if (unsignedTx.getIBTP() != Ibtp.IBTP.getDefaultInstance()) {
+            tx.toBuilder().setIBTP(unsignedTx.getIBTP()).build();
+        }
+        return tx.toByteArray();
     }
 
+    public static TransactionOuterClass.Transaction sign(TransactionOuterClass.Transaction unsignedTx, ECKeyPair ecKey) {
+        byte[] signMessage = HashUtil.sha3(needToHash(unsignedTx));
+        Sign.SignatureData sig = Sign.signMessage(signMessage, ecKey, false);
+        return unsignedTx.toBuilder()
+                .setTransactionHash(ByteString.copyFrom(needToHash(unsignedTx))) //set tx hash
+                .setSignature(ByteString.copyFrom(toByteArray(sig)))
+                .build();
+
+    }
+
+    public static byte[] toByteArray(Sign.SignatureData sig) {
+        byte v = sig.getV()[0];
+        final byte fixedV = v >= 27
+                ? (byte) (v - 27)
+                : v;
+
+        return ByteUtil.merge(
+                sig.getR(),
+                sig.getS(),
+                new byte[]{fixedV});
+    }
 }

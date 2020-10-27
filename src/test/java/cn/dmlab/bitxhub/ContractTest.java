@@ -48,6 +48,8 @@ public class ContractTest {
                 new FileInputStream("target/test-classes/testdata/example.wasm"));
         String contractAddress = client.deployContract(contractBytes);
 
+        System.out.println(contractAddress);
+
         ReceiptOuterClass.Receipt receipt = client.invokeXVMContract(contractAddress, "a", Types.i32(333), Types.i32(1));
         Assert.assertEquals(receipt.getRet().toStringUtf8(), "667");
     }
@@ -58,6 +60,7 @@ public class ContractTest {
         ReceiptOuterClass.Receipt receipt = client.invokeContract(TransactionOuterClass.TransactionData.VMType.BVM
                 , BVMAddr.STORE_CONTRACT_ADDR, "Set", Types.string("a"), Types.string(result));
         Assert.assertNotNull(receipt);
+
 
         ReceiptOuterClass.Receipt receipt1 = client.invokeContract(TransactionOuterClass.TransactionData.VMType.BVM
                 , BVMAddr.STORE_CONTRACT_ADDR, "Get", Types.string("a"));

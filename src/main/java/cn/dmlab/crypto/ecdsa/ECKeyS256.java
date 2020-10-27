@@ -656,6 +656,18 @@ public class ECKeyS256 implements Serializable {
             return new String(Base64.encode(sigData), Charset.forName("UTF-8"));
         }
 
+        public byte[] toByteArray(byte[] pubKey) {
+            final byte fixedV = this.v >= 27
+                    ? (byte) (this.v - 27)
+                    : this.v;
+
+            return ByteUtil.merge(
+                    ByteUtil.bigIntegerToBytes(this.r, 32),
+                    ByteUtil.bigIntegerToBytes(this.s, 32),
+                    new byte[]{fixedV},
+                    pubKey);
+        }
+
         public byte[] toByteArray() {
             final byte fixedV = this.v >= 27
                     ? (byte) (this.v - 27)
@@ -752,6 +764,8 @@ public class ECKeyS256 implements Serializable {
         sig.v = (byte) (recId + 27);
         return sig;
     }
+
+
 
 
     /**

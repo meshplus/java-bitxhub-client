@@ -1,13 +1,17 @@
 package cn.dmlab.bitxhub;
 
-
-import cn.dmlab.crypto.ecdsa.ECKeyP256;
 import cn.dmlab.crypto.ecdsa.ECKeyS256;
 import com.google.common.base.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.web3j.crypto.ECKeyPair;
+import org.web3j.crypto.Keys;
+
+import java.security.InvalidAlgorithmParameterException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -18,6 +22,7 @@ public class Config {
     private Integer port;
 
     private ECKeyS256 ecKey;
+    private byte[] address;
 
     public void checkConfig() {
         if (Strings.isNullOrEmpty(host) || port == null) {
@@ -32,6 +37,7 @@ public class Config {
         String host = "localhost";
         Integer port = 60011;
         ECKeyS256 ecKey = new ECKeyS256();
-        return new Config(host, port, ecKey);
+        byte[] address = ecKey.getAddress();
+        return new Config(host, port, ecKey, address);
     }
 }
