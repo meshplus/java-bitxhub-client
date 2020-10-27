@@ -130,6 +130,42 @@ public class GrpcClientImpl implements GrpcClient {
         return this.getReceipt(txHash);
     }
 
+    @Override
+    public TransactionOuterClass.Transaction generateContractTx(TransactionOuterClass.TransactionData.VMType vmType, String contractAddress, String method, ArgOuterClass.Arg... args) {
+        check(!Strings.isNullOrEmpty(contractAddress), "Contract address must not be null or empty");
+        check(!Strings.isNullOrEmpty(method), "Method must not be null or empty");
+        check(config.getEcKey() != null, "Ecdsa key must not be null");
+
+        TransactionOuterClass.InvokePayload invokePayload = TransactionOuterClass.InvokePayload.newBuilder()
+                .setMethod(method)
+                .build();
+
+        if (args != null) {
+            for (ArgOuterClass.Arg arg : args) {
+                invokePayload = invokePayload.toBuilder().addArgs(arg).build();
+            }
+        }
+
+        TransactionOuterClass.TransactionData td = TransactionOuterClass.TransactionData.newBuilder()
+                .setVmType(vmType)
+                .setType(TransactionOuterClass.TransactionData.Type.INVOKE)
+                .setPayload(invokePayload.toByteString())
+                .build();
+
+        TransactionOuterClass.Transaction tx = TransactionOuterClass.Transaction.newBuilder()
+                .setFrom(ByteString.copyFrom(config.getAddress()))
+                .setTo(ByteString.copyFrom(ByteUtil.hexStringToBytes(contractAddress)))
+                .setPayload(td.toByteString())
+                .setTimestamp(Utils.genTimestamp())
+                .build();
+        return tx;
+    }
+
+    @Override
+    public ReceiptOuterClass.Receipt sendView(TransactionOuterClass.Transaction transaction) {
+        return this.blockingStub.sendView(transaction);
+    }
+
 
     @Override
     public ReceiptOuterClass.Receipt getReceipt(String hash) {
@@ -215,33 +251,7 @@ public class GrpcClientImpl implements GrpcClient {
 
     @Override
     public ReceiptOuterClass.Receipt invokeContract(TransactionOuterClass.TransactionData.VMType vmType, String contractAddress, String method, ArgOuterClass.Arg... args) {
-        check(!Strings.isNullOrEmpty(contractAddress), "Contract address must not be null or empty");
-        check(!Strings.isNullOrEmpty(method), "Method must not be null or empty");
-        check(config.getEcKey() != null, "Ecdsa key must not be null");
-
-        TransactionOuterClass.InvokePayload invokePayload = TransactionOuterClass.InvokePayload.newBuilder()
-                .setMethod(method)
-                .build();
-
-        if (args != null) {
-            for (ArgOuterClass.Arg arg : args) {
-                invokePayload = invokePayload.toBuilder().addArgs(arg).build();
-            }
-        }
-
-        TransactionOuterClass.TransactionData td = TransactionOuterClass.TransactionData.newBuilder()
-                .setVmType(vmType)
-                .setType(TransactionOuterClass.TransactionData.Type.INVOKE)
-                .setPayload(invokePayload.toByteString())
-                .build();
-
-        TransactionOuterClass.Transaction tx = TransactionOuterClass.Transaction.newBuilder()
-                .setFrom(ByteString.copyFrom(config.getAddress()))
-                .setTo(ByteString.copyFrom(ByteUtil.hexStringToBytes(contractAddress)))
-                .setPayload(td.toByteString())
-                .setTimestamp(Utils.genTimestamp())
-                .build();
-
+        TransactionOuterClass.Transaction tx = this.generateContractTx(vmType,contractAddress,method, args);
         return this.sendTransactionWithReceipt(tx, null);
     }
 

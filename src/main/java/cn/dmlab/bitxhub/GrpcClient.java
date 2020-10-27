@@ -71,7 +71,23 @@ public interface GrpcClient {
      */
     ReceiptOuterClass.Receipt sendTransactionWithReceipt(TransactionOuterClass.Transaction transaction, TransactOpts opts);
 
+    /**
+     * Generate contract transaction with necessary parameters.
+     * @param vmType          VM type
+     * @param contractAddress contract address
+     * @param method          contract method
+     * @param args            method args
+     * @return transaction
+     */
+    TransactionOuterClass.Transaction generateContractTx(TransactionOuterClass.TransactionData.VMType vmType, String contractAddress, String method, ArgOuterClass.Arg... args);
 
+    /**
+     * Send view tx to chain and get the receipt.
+     *
+     * @param transaction Unsigned transaction
+     * @return tx receipt
+     */
+    ReceiptOuterClass.Receipt sendView(TransactionOuterClass.Transaction transaction);
     /**
      * Obtain block information from BitXHub.
      * The block header contains the basic information of the block,
