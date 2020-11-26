@@ -30,13 +30,23 @@ public interface GrpcClient {
     void setECKey(ECKeyS256 ecKey);
 
     /**
-     * Send a signed transaction to BitXHub. If the signature is illegal,
+     * Send a unsign transaction to BitXHub. If the signature is illegal,
      * the transaction hash will be obtained but the transaction receipt is illegal.
      *
      * @param transaction Unsigned transaction
      * @return tx hash
      */
     String sendTransaction(TransactionOuterClass.Transaction transaction, TransactOpts opts);
+
+
+    /**
+     * Send a signed transaction to BitXHub. If the signature is illegal,
+     * the transaction hash will be obtained but the transaction receipt is illegal.
+     *
+     * @param transaction Unsigned transaction
+     * @return tx hash
+     */
+    String sendSignedTransaction(TransactionOuterClass.Transaction transaction);
 
 
     /**

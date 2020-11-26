@@ -117,6 +117,17 @@ public class GrpcClientImpl implements GrpcClient {
     }
 
     @Override
+    public String sendSignedTransaction(TransactionOuterClass.Transaction transaction) {
+        Broker.TransactionHashMsg transactionHashMsg = blockingStub.sendTransaction(transaction);
+
+        if (transactionHashMsg == null) {
+            log.warn("transactionHashMsg is null");
+            return null;
+        }
+        return transactionHashMsg.getTxHash();
+    }
+
+    @Override
     public long getPendingNonceByAccount(String account) {
         Broker.Response pendingNonceByAccount = blockingStub.getPendingNonceByAccount(Broker.Address.newBuilder().setAddress(account).build());
         BigInteger nonce = new BigInteger(pendingNonceByAccount.getData().toStringUtf8());
