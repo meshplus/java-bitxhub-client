@@ -17,7 +17,7 @@ public class BlockTest {
 
     private GrpcClient client;
 
-    private Config config = Config.defaultConfig();
+    private Config config = Config.defaultConfigWithTLS();
 
     @Before
     public void setUp() {

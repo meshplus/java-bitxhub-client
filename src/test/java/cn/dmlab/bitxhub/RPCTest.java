@@ -15,7 +15,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import pb.Broker;
 import pb.ReceiptOuterClass;
-import pb.TransactionOuterClass;
+import pb.Transaction;
 
 
 @RunWith(JUnit4.class)
@@ -47,11 +47,11 @@ public class RPCTest {
 
     @Test
     public void getTransaction() {
-        TransactionOuterClass.Transaction unsignedTx = TransactionOuterClass.Transaction.newBuilder()
+        Transaction.BxhTransaction unsignedTx = Transaction.BxhTransaction.newBuilder()
                 .setFrom(ByteString.copyFrom(from))
                 .setTo(ByteString.copyFrom(to))
                 .setTimestamp(Utils.genTimestamp())
-                .setPayload(TransactionOuterClass.TransactionData.newBuilder().setAmount(100000L).build().toByteString())
+                .setPayload(Transaction.TransactionData.newBuilder().setAmount("100000").build().toByteString())
                 .build();
         ReceiptOuterClass.Receipt receipt = client.sendTransactionWithReceipt(unsignedTx, null);
 
@@ -64,12 +64,12 @@ public class RPCTest {
 
     @Test
     public void getReceipt() {
-        TransactionOuterClass.Transaction unsignedTx = TransactionOuterClass.Transaction.newBuilder()
+        Transaction.BxhTransaction unsignedTx = Transaction.BxhTransaction.newBuilder()
                 .setFrom(ByteString.copyFrom(from))
                 .setTo(ByteString.copyFrom(to))
                 .setTimestamp(Utils.genTimestamp())
-                .setPayload(TransactionOuterClass.TransactionData.newBuilder()
-                        .setAmount(100000L)
+                .setPayload(Transaction.TransactionData.newBuilder()
+                        .setAmount("100000")
                         .build().toByteString())
                 .build();
         String txHash = client.sendTransaction(unsignedTx, null);
@@ -81,11 +81,11 @@ public class RPCTest {
 
     @Test
     public void sendTransaction() {
-        TransactionOuterClass.Transaction unsignedTx = TransactionOuterClass.Transaction.newBuilder()
+        Transaction.BxhTransaction unsignedTx = Transaction.BxhTransaction.newBuilder()
                 .setFrom(ByteString.copyFrom(from))
                 .setTo(ByteString.copyFrom(to))
                 .setTimestamp(Utils.genTimestamp())
-                .setPayload(TransactionOuterClass.TransactionData.newBuilder().setAmount(100000L).build().toByteString())
+                .setPayload(Transaction.TransactionData.newBuilder().setAmount("100000").build().toByteString())
                 .build();
         String txHash = client.sendTransaction(unsignedTx, null);
         Assert.assertNotNull(txHash);

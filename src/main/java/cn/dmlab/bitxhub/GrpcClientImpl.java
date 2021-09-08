@@ -9,11 +9,14 @@ import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
+import io.grpc.netty.GrpcSslContexts;
+import io.grpc.netty.NegotiationType;
 import io.grpc.stub.StreamObserver;
 import lombok.extern.slf4j.Slf4j;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.RetryPolicy;
 import net.jodah.failsafe.function.CheckedSupplier;
+import io.grpc.netty.NettyChannelBuilder;
 
 import java.math.BigInteger;
 import java.time.Duration;
@@ -22,6 +25,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.web3j.crypto.Keys;
 import pb.*;
+
+import javax.net.ssl.SSLSocketFactory;
 
 
 @Slf4j
@@ -43,13 +48,22 @@ public class GrpcClientImpl implements GrpcClient {
         }
         config.checkConfig();
         this.config = config;
-        this.channel = ManagedChannelBuilder.forAddress(config.getHost(), config.getPort())
-                .usePlaintext()
-                .build();
+        if (null == config.getSslContext()) {
+            this.channel = ManagedChannelBuilder.forAddress(config.getHost(), config.getPort())
+                    .usePlaintext()
+                    .build();
+        } else {
+            // 这里要注意下由于java版本的没有提供像go那样的可以指定域名
+            // java版本源代码中把host传入作为证书域名
+            // 域名是在证书生成的过程中自己输入的
+            this.channel = NettyChannelBuilder.forAddress(config.getHost(), config.getPort())
+                    .sslContext(config.getSslContext())
+                    .negotiationType(NegotiationType.TLS)
+                    .build();
+        }
         blockingStub = ChainBrokerGrpc.newBlockingStub(channel);
         asyncStub = ChainBrokerGrpc.newStub(channel);
     }
-
 
     public void shutdown() throws InterruptedException {
         channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
@@ -75,13 +89,13 @@ public class GrpcClientImpl implements GrpcClient {
 
     @Override
     public void setECKey(ECKeyS256 ecKey) {
-        check(!Objects.isNull(ecKey), "Ecdsa key  must not be null");
+        check(!Objects.isNull(ecKey), "Ecdsa key must not be null");
         this.config.setEcKey(ecKey);
     }
 
 
     @Override
-    public String sendTransaction(TransactionOuterClass.Transaction transaction, TransactOpts opts) {
+    public String sendTransaction(Transaction.BxhTransaction transaction, TransactOpts opts) {
         check(!Objects.isNull(transaction.getFrom()), "From address must not be null");
         check(!Objects.isNull(transaction.getTo()), "To address must not be null");
         check(!Objects.isNull(transaction.getSignature()), "Signature must not be null");
@@ -106,7 +120,7 @@ public class GrpcClientImpl implements GrpcClient {
             }
         }
         transaction = transaction.toBuilder().setNonce(nonce).build();
-        TransactionOuterClass.Transaction signedTx = SignUtils.sign(transaction, config.getEcKey());
+        Transaction.BxhTransaction signedTx = SignUtils.sign(transaction, config.getEcKey());
         Broker.TransactionHashMsg transactionHashMsg = blockingStub.sendTransaction(signedTx);
 
         if (transactionHashMsg == null) {
@@ -117,7 +131,7 @@ public class GrpcClientImpl implements GrpcClient {
     }
 
     @Override
-    public String sendSignedTransaction(TransactionOuterClass.Transaction transaction) {
+    public String sendSignedTransaction(Transaction.BxhTransaction transaction) {
         Broker.TransactionHashMsg transactionHashMsg = blockingStub.sendTransaction(transaction);
 
         if (transactionHashMsg == null) {
@@ -136,18 +150,18 @@ public class GrpcClientImpl implements GrpcClient {
 
 
     @Override
-    public ReceiptOuterClass.Receipt sendTransactionWithReceipt(TransactionOuterClass.Transaction transaction, TransactOpts opts) {
+    public ReceiptOuterClass.Receipt sendTransactionWithReceipt(Transaction.BxhTransaction transaction, TransactOpts opts) {
         String txHash = this.sendTransaction(transaction, opts);
         return this.getReceipt(txHash);
     }
 
     @Override
-    public TransactionOuterClass.Transaction generateContractTx(TransactionOuterClass.TransactionData.VMType vmType, String contractAddress, String method, ArgOuterClass.Arg... args) {
+    public Transaction.BxhTransaction generateContractTx(Transaction.TransactionData.VMType vmType, String contractAddress, String method, ArgOuterClass.Arg... args) {
         check(!Strings.isNullOrEmpty(contractAddress), "Contract address must not be null or empty");
         check(!Strings.isNullOrEmpty(method), "Method must not be null or empty");
         check(config.getEcKey() != null, "Ecdsa key must not be null");
 
-        TransactionOuterClass.InvokePayload invokePayload = TransactionOuterClass.InvokePayload.newBuilder()
+        Transaction.InvokePayload invokePayload = Transaction.InvokePayload.newBuilder()
                 .setMethod(method)
                 .build();
 
@@ -157,13 +171,13 @@ public class GrpcClientImpl implements GrpcClient {
             }
         }
 
-        TransactionOuterClass.TransactionData td = TransactionOuterClass.TransactionData.newBuilder()
+        Transaction.TransactionData td = Transaction.TransactionData.newBuilder()
                 .setVmType(vmType)
-                .setType(TransactionOuterClass.TransactionData.Type.INVOKE)
+                .setType(Transaction.TransactionData.Type.INVOKE)
                 .setPayload(invokePayload.toByteString())
                 .build();
 
-        TransactionOuterClass.Transaction tx = TransactionOuterClass.Transaction.newBuilder()
+        Transaction.BxhTransaction tx = Transaction.BxhTransaction.newBuilder()
                 .setFrom(ByteString.copyFrom(config.getAddress()))
                 .setTo(ByteString.copyFrom(ByteUtil.hexStringToBytes(contractAddress)))
                 .setPayload(td.toByteString())
@@ -173,7 +187,7 @@ public class GrpcClientImpl implements GrpcClient {
     }
 
     @Override
-    public ReceiptOuterClass.Receipt sendView(TransactionOuterClass.Transaction transaction) {
+    public ReceiptOuterClass.Receipt sendView(Transaction.BxhTransaction transaction) {
         return this.blockingStub.sendView(transaction);
     }
 
@@ -241,13 +255,13 @@ public class GrpcClientImpl implements GrpcClient {
         check(contract != null, "Contract bytes must not be null");
         check(config.getEcKey() != null, "Ecdsa key must not be null");
         // build transaction with INVOKE type.
-        TransactionOuterClass.TransactionData td = TransactionOuterClass.TransactionData.newBuilder()
-                .setType(TransactionOuterClass.TransactionData.Type.INVOKE)
-                .setVmType(TransactionOuterClass.TransactionData.VMType.XVM)
+        Transaction.TransactionData td = Transaction.TransactionData.newBuilder()
+                .setType(Transaction.TransactionData.Type.INVOKE)
+                .setVmType(Transaction.TransactionData.VMType.XVM)
                 .setPayload(ByteString.copyFrom(contract))
                 .build();
 
-        TransactionOuterClass.Transaction tx = TransactionOuterClass.Transaction.newBuilder()
+        Transaction.BxhTransaction tx = Transaction.BxhTransaction.newBuilder()
                 .setFrom(ByteString.copyFrom(config.getAddress()))
                 .setTo(ByteString.copyFrom(new byte[20])) // set to_address 0
                 .setNonce(Utils.genNonce())
@@ -261,20 +275,20 @@ public class GrpcClientImpl implements GrpcClient {
     }
 
     @Override
-    public ReceiptOuterClass.Receipt invokeContract(TransactionOuterClass.TransactionData.VMType vmType, String contractAddress, String method, ArgOuterClass.Arg... args) {
-        TransactionOuterClass.Transaction tx = this.generateContractTx(vmType,contractAddress,method, args);
+    public ReceiptOuterClass.Receipt invokeContract(Transaction.TransactionData.VMType vmType, String contractAddress, String method, ArgOuterClass.Arg... args) {
+        Transaction.BxhTransaction tx = this.generateContractTx(vmType,contractAddress,method, args);
         return this.sendTransactionWithReceipt(tx, null);
     }
 
     @Override
     public ReceiptOuterClass.Receipt invokeBVMContract(String contractAddress, String method, ArgOuterClass.Arg... args) {
-        return this.invokeContract(TransactionOuterClass.TransactionData.VMType.BVM,
+        return this.invokeContract(Transaction.TransactionData.VMType.BVM,
                 contractAddress, method, args);
     }
 
     @Override
     public ReceiptOuterClass.Receipt invokeXVMContract(String contractAddress, String method, ArgOuterClass.Arg... args) {
-        return this.invokeContract(TransactionOuterClass.TransactionData.VMType.XVM,
+        return this.invokeContract(Transaction.TransactionData.VMType.XVM,
                 contractAddress, method, args);
     }
 
@@ -341,7 +355,9 @@ public class GrpcClientImpl implements GrpcClient {
     }
 
     private static void check(boolean test, String message) {
-        if (!test) throw new IllegalArgumentException(message);
+        if (!test) {
+            throw new IllegalArgumentException(message);
+        }
     }
 }
 

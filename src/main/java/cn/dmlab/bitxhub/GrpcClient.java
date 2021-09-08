@@ -36,7 +36,7 @@ public interface GrpcClient {
      * @param transaction Unsigned transaction
      * @return tx hash
      */
-    String sendTransaction(TransactionOuterClass.Transaction transaction, TransactOpts opts);
+    String sendTransaction(Transaction.BxhTransaction transaction, TransactOpts opts);
 
 
     /**
@@ -46,7 +46,7 @@ public interface GrpcClient {
      * @param transaction Unsigned transaction
      * @return tx hash
      */
-    String sendSignedTransaction(TransactionOuterClass.Transaction transaction);
+    String sendSignedTransaction(Transaction.BxhTransaction transaction);
 
 
     /**
@@ -79,7 +79,7 @@ public interface GrpcClient {
      * @param transaction Unsigned transaction
      * @return tx receipt
      */
-    ReceiptOuterClass.Receipt sendTransactionWithReceipt(TransactionOuterClass.Transaction transaction, TransactOpts opts);
+    ReceiptOuterClass.Receipt sendTransactionWithReceipt(Transaction.BxhTransaction transaction, TransactOpts opts);
 
     /**
      * Generate contract transaction with necessary parameters.
@@ -89,7 +89,7 @@ public interface GrpcClient {
      * @param args            method args
      * @return transaction
      */
-    TransactionOuterClass.Transaction generateContractTx(TransactionOuterClass.TransactionData.VMType vmType, String contractAddress, String method, ArgOuterClass.Arg... args);
+    Transaction.BxhTransaction generateContractTx(Transaction.TransactionData.VMType vmType, String contractAddress, String method, ArgOuterClass.Arg... args);
 
     /**
      * Send view tx to chain and get the receipt.
@@ -97,7 +97,7 @@ public interface GrpcClient {
      * @param transaction Unsigned transaction
      * @return tx receipt
      */
-    ReceiptOuterClass.Receipt sendView(TransactionOuterClass.Transaction transaction);
+    ReceiptOuterClass.Receipt sendView(Transaction.BxhTransaction transaction);
     /**
      * Obtain block information from BitXHub.
      * The block header contains the basic information of the block,
@@ -192,7 +192,7 @@ public interface GrpcClient {
      * @param args            method args
      * @return transaction receipt
      */
-    ReceiptOuterClass.Receipt invokeContract(TransactionOuterClass.TransactionData.VMType vmType, String contractAddress, String method, ArgOuterClass.Arg... args);
+    ReceiptOuterClass.Receipt invokeContract(Transaction.TransactionData.VMType vmType, String contractAddress, String method, ArgOuterClass.Arg... args);
 
     /**
      * Invoke the BVM contract, BVM is BitXHub's blot contract.

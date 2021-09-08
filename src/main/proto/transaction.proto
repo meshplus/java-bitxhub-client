@@ -5,18 +5,19 @@ package pb;
 import "arg.proto";
 import "ibtp.proto";
 
-message Transaction {
+message BxhTransaction {
     bytes version = 1;
     bytes from = 2;
     bytes to = 3;
     int64 timestamp = 4;
-    bytes transaction_hash = 5 ;
+    bytes transaction_hash = 5;
     bytes payload = 6;
     pb.IBTP IBTP = 7;
     uint64 nonce = 8;
-    uint64 amount  = 9;
-    bytes signature = 10;
-    bytes extra = 11;
+    string amount  = 9;
+    uint32 typ = 10;
+    bytes signature = 11;
+    bytes extra = 12;
 }
 
 message TransactionData {
@@ -28,7 +29,7 @@ message TransactionData {
         UNFREEZE = 4;
     }
     Type type = 1;
-    uint64 amount = 2;
+    string amount = 2;
     enum VMType {
         BVM = 0;
         XVM = 1;
@@ -41,10 +42,6 @@ message TransactionData {
 message InvokePayload {
     string method = 1;
     repeated Arg args = 2;
-}
-
-message Transactions {
-    repeated Transaction transactions = 1;
 }
 
 message TransactionMeta {
@@ -66,7 +63,7 @@ message TransactionTracingMeta {
 
 message TransactionSlice {
     uint64 height = 1;
-    repeated Transaction txs = 2;
+    repeated BxhTransaction txs = 2;
 }
 
 message AssetExchangeInfo {
@@ -83,10 +80,16 @@ enum TransactionStatus {
     BEGIN = 0;
     SUCCESS = 1;
     FAILURE = 2;
+    ROLLBACK = 3;
 }
 
 enum AssetExchangeStatus {
     INIT = 0;
     REDEEM = 1;
     REFUND = 2;
+}
+
+message TransactionRecord {
+    uint64 height = 1;
+    TransactionStatus status = 2;
 }

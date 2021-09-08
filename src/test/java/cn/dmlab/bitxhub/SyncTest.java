@@ -41,11 +41,11 @@ public class SyncTest {
     }
 
     public void sendTransaction() {
-        TransactionOuterClass.Transaction unsignedTx = TransactionOuterClass.Transaction.newBuilder()
+        Transaction.BxhTransaction unsignedTx = Transaction.BxhTransaction.newBuilder()
                 .setFrom(ByteString.copyFrom(from))
                 .setTo(ByteString.copyFrom(to))
                 .setTimestamp(Utils.genTimestamp())
-                .setPayload(TransactionOuterClass.TransactionData.newBuilder().setAmount(100000L).build().toByteString())
+                .setPayload(Transaction.TransactionData.newBuilder().setAmount("100000").build().toByteString())
                 .build();
         String txHash = client.sendTransaction(unsignedTx, null);
         Assert.assertNotNull(txHash);
@@ -148,10 +148,10 @@ public class SyncTest {
 
     Ibtp.IBTP getIBTP() {
         Ibtp.content content = Ibtp.content.newBuilder()
-                .setSrcContractId(ByteUtil.toHexStringWithOx(from))
-                .setDstContractId(ByteUtil.toHexStringWithOx(to))
-                .setFunc("set")
-                .addArgs(Types.string("Alice").toByteString())
+//                .setSrcContractId(ByteUtil.toHexStringWithOx(from))
+//                .setDstContractId(ByteUtil.toHexStringWithOx(to))
+//                .setFunc("set")
+//                .addArgs(Types.string("Alice").toByteString())
                 .build();
 
         Ibtp.payload payload = Ibtp.payload.newBuilder()
@@ -164,7 +164,7 @@ public class SyncTest {
                 .setIndex(1)
                 .setPayload(payload.toByteString())
                 .setType(Ibtp.IBTP.Type.INTERCHAIN)
-                .setTimestamp(Utils.genTimestamp())
+                // .setTimestamp(Utils.genTimestamp())
                 .build();
         return ib;
     }

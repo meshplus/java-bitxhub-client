@@ -16,7 +16,7 @@ public class SignUtils {
      * @param ecKeyS256  ecdsa key pair
      * @return sign tx
      */
-    public static TransactionOuterClass.Transaction sign(TransactionOuterClass.Transaction unsignedTx
+    public static Transaction.BxhTransaction sign(Transaction.BxhTransaction unsignedTx
             , ECKeyS256 ecKeyS256) {
         byte[] txHash = needToHash(unsignedTx);
         byte[] signMessage = HashUtil.sha3(txHash);
@@ -34,7 +34,7 @@ public class SignUtils {
      * @param ecKey      ecdsa key pair
      * @return sign tx
      */
-    public static TransactionOuterClass.Transaction sign(TransactionOuterClass.Transaction unsignedTx
+    public static Transaction.BxhTransaction sign(Transaction.BxhTransaction unsignedTx
             , ECKeyP256 ecKey) {
         byte[] signMessage = HashUtil.sha3(needToHash(unsignedTx));
         ECKeyP256.ECDSASignature sig = ecKey.sign(signMessage);
@@ -44,8 +44,8 @@ public class SignUtils {
                 .build();
     }
 
-    public static byte[] needToHash(TransactionOuterClass.Transaction unsignedTx) {
-        TransactionOuterClass.Transaction tx = TransactionOuterClass.Transaction.newBuilder()
+    public static byte[] needToHash(Transaction.BxhTransaction unsignedTx) {
+        Transaction.BxhTransaction tx = Transaction.BxhTransaction.newBuilder()
                 .setFrom(unsignedTx.getFrom())
                 .setTo(unsignedTx.getTo())
                 .setTimestamp(unsignedTx.getTimestamp())
@@ -58,7 +58,7 @@ public class SignUtils {
         return tx.toByteArray();
     }
 
-    public static TransactionOuterClass.Transaction sign(TransactionOuterClass.Transaction unsignedTx, ECKeyPair ecKey) {
+    public static Transaction.BxhTransaction sign(Transaction.BxhTransaction unsignedTx, ECKeyPair ecKey) {
         byte[] signMessage = HashUtil.sha3(needToHash(unsignedTx));
         Sign.SignatureData sig = Sign.signMessage(signMessage, ecKey, false);
         return unsignedTx.toBuilder()
