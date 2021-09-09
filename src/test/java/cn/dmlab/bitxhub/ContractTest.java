@@ -9,7 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import pb.ReceiptOuterClass;
-import pb.TransactionOuterClass;
+import pb.Transaction;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -57,12 +57,12 @@ public class ContractTest {
     @Test
     public void invokeBVMContract() {
         String result = "10";
-        ReceiptOuterClass.Receipt receipt = client.invokeContract(TransactionOuterClass.TransactionData.VMType.BVM
+        ReceiptOuterClass.Receipt receipt = client.invokeContract(Transaction.TransactionData.VMType.BVM
                 , BVMAddr.STORE_CONTRACT_ADDR, "Set", Types.string("a"), Types.string(result));
         Assert.assertNotNull(receipt);
 
 
-        ReceiptOuterClass.Receipt receipt1 = client.invokeContract(TransactionOuterClass.TransactionData.VMType.BVM
+        ReceiptOuterClass.Receipt receipt1 = client.invokeContract(Transaction.TransactionData.VMType.BVM
                 , BVMAddr.STORE_CONTRACT_ADDR, "Get", Types.string("a"));
         Assert.assertEquals(receipt1.getRet().toStringUtf8(), result);
 

@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package pb;
+
+message Uint64Slice {
+  repeated uint64 slice = 1;
+}
+
+message StringUint64Map {
+  repeated string keys = 1;
+  repeated uint64 vals = 2;
+}
+
+message StringUint64SliceMap {
+  repeated string keys = 1;
+  repeated Uint64Slice vals = 2;
+}
+
+message VerifiedIndex {
+  uint64 index = 1;
+  bool valid = 2;
+}
+
+message VerifiedIndexSlice {
+  repeated VerifiedIndex slice = 1;
+}
+
+message StringVerifiedIndexMap {
+  repeated string keys = 1;
+  repeated VerifiedIndex vals = 2;
+}
+
+message StringVerifiedIndexSliceMap {
+  repeated string keys = 1;
+  repeated VerifiedIndexSlice vals = 2;
+}
+
+message StringSlice {
+  repeated string slice = 1;
+}
+
+message StringStringSliceMap {
+  repeated string keys = 1;
+  repeated StringSlice vals = 2;
+}

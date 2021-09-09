@@ -23,6 +23,7 @@ jobs:
           export PATH=$PATH:$(go env GOPATH)/bin
           git clone https://github.com/meshplus/bitxhub.git
           cd bitxhub && git checkout master
+          sed -i 's/bvm_gas_price = 50000/bvm_gas_price = 0/g' ./config/bitxhub.toml
           make prepare
           cd scripts && nohup bash solo.sh &
           sleep 60
