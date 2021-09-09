@@ -5,6 +5,8 @@ import io.grpc.stub.StreamObserver;
 import org.web3j.crypto.ECKeyPair;
 import pb.*;
 
+import java.util.Map;
+
 
 public interface GrpcClient {
     /**
@@ -213,5 +215,28 @@ public interface GrpcClient {
      * @return transaction receipt
      */
     ReceiptOuterClass.Receipt invokeXVMContract(String contractAddress, String method, ArgOuterClass.Arg... args);
+
+    /**
+     * Get the MultiSigns from bitXHub
+     * @param type
+     * @param content
+     * @return
+     */
+    Map<String, String> getMultiSigns(pb.Broker.GetMultiSignsRequest.Type type, String content);
+
+    /**
+     * Get the BitXHub chain id
+     * @return
+     */
+    String getChainID();
+
+    /**
+     * Get the BitXHub chain TPS
+     * @param begin
+     * @param end
+     * @return
+     */
+    String getTPS(long begin, long end);
+
 
 }

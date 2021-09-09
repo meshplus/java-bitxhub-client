@@ -9,7 +9,6 @@ import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
-import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NegotiationType;
 import io.grpc.stub.StreamObserver;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +19,8 @@ import io.grpc.netty.NettyChannelBuilder;
 
 import java.math.BigInteger;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -99,7 +100,7 @@ public class GrpcClientImpl implements GrpcClient {
         check(!Objects.isNull(transaction.getFrom()), "From address must not be null");
         check(!Objects.isNull(transaction.getTo()), "To address must not be null");
         check(!Objects.isNull(transaction.getSignature()), "Signature must not be null");
-
+        
         if (opts == null) {
             opts = new TransactOpts();
             opts.setFrom(Keys.toChecksumAddress(ByteUtil.toHex(transaction.getFrom().toByteArray())));
@@ -358,6 +359,36 @@ public class GrpcClientImpl implements GrpcClient {
         if (!test) {
             throw new IllegalArgumentException(message);
         }
+    }
+
+    @Override
+    public Map<String, String> getMultiSigns(Broker.GetMultiSignsRequest.Type type, String content) {
+        pb.Broker.GetMultiSignsRequest request = pb.Broker.GetMultiSignsRequest.newBuilder()
+                .setContent(content)
+                .setType(type)
+                .build();
+        Broker.SignResponse multiSigns = blockingStub.getMultiSigns(request);
+        Map<String, String> result = new HashMap<>(32);
+        for (Map.Entry<String, ByteString> e: multiSigns.getSignMap().entrySet()) {
+            result.put(e.getKey(), e.getValue().toStringUtf8());
+        }
+        return result;
+    }
+
+    @Override
+    public String getChainID() {
+        Broker.Response chainID = blockingStub.getChainID(Broker.Empty.newBuilder().build());
+        return chainID.getData().toStringUtf8();
+    }
+
+    @Override
+    public String getTPS(long begin, long end) {
+        Broker.GetTPSRequest request = Broker.GetTPSRequest.newBuilder()
+                .setBegin(begin)
+                .setEnd(end)
+                .build();
+        Broker.Response response = blockingStub.getTPS(request);
+        return response.getData().toStringUtf8();
     }
 }
 
