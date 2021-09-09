@@ -9,6 +9,8 @@ import org.web3j.crypto.Sign;
 import pb.*;
 
 public class SignUtils {
+
+    private static byte Secp256k1_type = 3;
     /**
      * Sign tx and return signed tx
      *
@@ -22,9 +24,16 @@ public class SignUtils {
         byte[] signMessage = HashUtil.sha3(txHash);
         ECKeyS256.ECDSASignature sig = ecKeyS256.sign(signMessage);
         return unsignedTx.toBuilder()
-                .setTransactionHash(ByteString.copyFrom(txHash)) //set tx hash
-                .setSignature(ByteString.copyFrom(sig.toByteArray()))
+                .setTransactionHash(ByteString.copyFrom(txHash))
+                .setSignature(ByteString.copyFrom(concat(new byte[]{Secp256k1_type}, sig.toByteArray())))
                 .build();
+    }
+
+    public static byte[] concat(byte[] a, byte[] b) {
+        byte[] c= new byte[a.length + b.length];
+        System.arraycopy(a, 0, c, 0, a.length);
+        System.arraycopy(b, 0, c, a.length, b.length);
+        return c;
     }
 
     /**
@@ -51,10 +60,13 @@ public class SignUtils {
                 .setTimestamp(unsignedTx.getTimestamp())
                 .setPayload(unsignedTx.getPayload())
                 .setNonce(unsignedTx.getNonce())
-                .setAmount(unsignedTx.getAmount()).build();
+                .setAmount(unsignedTx.getAmount())
+                .setTyp(unsignedTx.getTyp())
+                .build();
         if (unsignedTx.getIBTP() != Ibtp.IBTP.getDefaultInstance()) {
             tx.toBuilder().setIBTP(unsignedTx.getIBTP()).build();
         }
+
         return tx.toByteArray();
     }
 

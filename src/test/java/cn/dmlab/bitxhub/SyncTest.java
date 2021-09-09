@@ -9,10 +9,7 @@ import com.google.protobuf.ByteString;
 import io.grpc.stub.StreamObserver;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import pb.*;
@@ -52,6 +49,7 @@ public class SyncTest {
     }
 
     @Test
+    @Ignore
     public void getInterchainTxWrapper() throws InterruptedException {
         CountDownLatch asyncLatch = new CountDownLatch(1);
         StreamObserver<Broker.InterchainTxWrappers> observer = new StreamObserver<Broker.InterchainTxWrappers>() {

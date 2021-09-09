@@ -271,7 +271,9 @@ public class GrpcClientImpl implements GrpcClient {
                 .build();
 
         ReceiptOuterClass.Receipt receipt = this.sendTransactionWithReceipt(tx, null);
-
+        if (ReceiptOuterClass.Receipt.Status.SUCCESS.getNumber() != receipt.getStatus().getNumber()) {
+            throw new RuntimeException("deployContract err: "+ receipt.getRet().toStringUtf8());
+        }
         return ByteUtil.toHexStringWithOx(receipt.getRet().toByteArray());
     }
 

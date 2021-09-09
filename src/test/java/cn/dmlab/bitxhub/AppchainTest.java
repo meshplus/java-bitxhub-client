@@ -3,10 +3,7 @@ package cn.dmlab.bitxhub;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import pb.ArgOuterClass;
@@ -35,6 +32,7 @@ public class AppchainTest {
     }
 
     @Test
+    @Ignore
     public void registerAppchain() {
         ReceiptOuterClass.Receipt receipt = register();
 
@@ -46,6 +44,7 @@ public class AppchainTest {
     }
 
     @Test
+    @Ignore
     public void adultAppchain() {
         ReceiptOuterClass.Receipt receipt = register();
 
@@ -60,6 +59,7 @@ public class AppchainTest {
     }
 
     @Test
+    @Ignore
     public void deleteAppchain() {
         ReceiptOuterClass.Receipt receipt = register();
 
@@ -72,6 +72,7 @@ public class AppchainTest {
     }
 
     @Test
+    @Ignore
     public void registerRule() throws IOException {
         byte[] contractBytes = IOUtils.toByteArray(
                 new FileInputStream("target/test-classes/testdata/example.wasm"));
