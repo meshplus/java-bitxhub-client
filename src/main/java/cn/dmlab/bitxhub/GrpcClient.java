@@ -120,6 +120,16 @@ public interface GrpcClient {
      */
     Broker.GetBlocksResponse getBlocks(Long start, Long end);
 
+
+    /**
+     * Get happy blocks of the specified block height range.
+     *
+     * @param start start signal
+     * @param end   end signal
+     * @return blocks info
+     */
+    Broker.GetHappyBlocksResponse getHappyBlocks(Long start, Long end);
+
     /**
      * Get the status of the blockchain from BitXHub, normal or abnormal.
      *

@@ -27,7 +27,6 @@ import java.util.concurrent.TimeUnit;
 import org.web3j.crypto.Keys;
 import pb.*;
 
-import javax.net.ssl.SSLSocketFactory;
 
 
 @Slf4j
@@ -306,6 +305,20 @@ public class GrpcClientImpl implements GrpcClient {
                 .build();
         return blockingStub.getBlocks(request);
     }
+
+
+    @Override
+    public Broker.GetHappyBlocksResponse getHappyBlocks(Long start, Long end) {
+        check(start >= 0, "Start must not be negative");
+        check(end >= start, "End must not be negative");
+
+        Broker.GetBlocksRequest request = Broker.GetBlocksRequest.newBuilder()
+                .setStart(start)
+                .setEnd(end)
+                .build();
+        return blockingStub.getHappyBlocks(request);
+    }
+
 
     @Override
     public Broker.Response getNetworkMeta() {

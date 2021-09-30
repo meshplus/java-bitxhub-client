@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 package pb;
+import "transaction.proto";
 
 message Block {
     BlockHeader block_header = 1;
@@ -20,4 +21,14 @@ message BlockHeader {
     int64 timestamp = 7;
     bytes version = 8;
     bytes Bloom = 9;
+}
+
+message HappyBlock {
+    BlockHeader block_header = 1;
+    repeated pb.BxhTransaction bxh_txs = 2;
+    repeated bytes eth_txs = 3;
+    bytes block_hash = 4;
+    bytes signature = 5;
+    bytes extra = 6;
+    repeated uint64 index = 7;
 }
