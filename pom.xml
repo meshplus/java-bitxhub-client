@@ -4,7 +4,7 @@
     <groupId>cn.dmlab</groupId>
     <artifactId>java-bitxhub-client</artifactId>
     <packaging>jar</packaging>
-    <version>v1.4.0-rc3</version>
+    <version>v1.6.0</version>
     <name>java-bitxhub-client</name>
     <url>https://github.com/meshplus/java-bitxhub-client.git</url>
 

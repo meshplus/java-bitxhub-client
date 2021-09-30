@@ -1,8 +1,10 @@
 package cn.dmlab.bitxhub;
 
+import cn.dmlab.crypto.ecdsa.ECKeyS256;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.bouncycastle.util.encoders.Hex;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
