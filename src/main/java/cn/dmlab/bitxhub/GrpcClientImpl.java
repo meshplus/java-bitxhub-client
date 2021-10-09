@@ -183,7 +183,8 @@ public class GrpcClientImpl implements GrpcClient {
                 .setPayload(td.toByteString())
                 .setTimestamp(Utils.genTimestamp())
                 .build();
-        return tx;
+        Transaction.BxhTransaction signedTx = SignUtils.sign(tx, config.getEcKey());
+        return signedTx;
     }
 
     @Override

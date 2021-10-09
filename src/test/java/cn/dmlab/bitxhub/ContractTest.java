@@ -1,5 +1,7 @@
 package cn.dmlab.bitxhub;
 
+import cn.dmlab.crypto.ecdsa.ECKeyS256;
+import cn.dmlab.utils.ByteUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
@@ -24,6 +26,7 @@ public class ContractTest {
 
     @Before
     public void setUp() {
+        config.setEcKey(ECKeyS256.fromPrivate(ByteUtil.hexStringToBytes("b6477143e17f889263044f6cf463dc37177ac4526c4c39a7a344198457024a2f")));
         client = new GrpcClientImpl(config);
     }
 
@@ -62,8 +65,8 @@ public class ContractTest {
         Assert.assertNotNull(receipt);
 
 
-        ReceiptOuterClass.Receipt receipt1 = client.invokeContract(Transaction.TransactionData.VMType.BVM
-                , BVMAddr.STORE_CONTRACT_ADDR, "Get", Types.string("a"));
+        ReceiptOuterClass.Receipt receipt1 = client.sendView(client.generateContractTx(Transaction.TransactionData.VMType.BVM
+                , BVMAddr.STORE_CONTRACT_ADDR, "Get", Types.string("a")));
         Assert.assertEquals(receipt1.getRet().toStringUtf8(), result);
 
     }
