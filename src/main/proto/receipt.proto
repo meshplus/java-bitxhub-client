@@ -28,6 +28,15 @@ message Event {
         OTHER = 0;
         INTERCHAIN = 1;
         NODEMGR = 2;
+        WASM = 3;
+        AUDIT_PROPOSAL = 4;
+        AUDIT_APPCHAIN = 5;
+        AUDIT_RULE = 6;
+        AUDIT_SERVICE = 7;
+        AUDIT_NODE = 8;
+        AUDIT_ROLE = 9;
+        AUDIT_INTERCHAIN = 10;
+        AUDIT_DAPP = 11;
     }
     // Transaction Hash
     bytes tx_hash = 1;

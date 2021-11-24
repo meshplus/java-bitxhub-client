@@ -2,7 +2,6 @@ package cn.dmlab.bitxhub;
 
 import cn.dmlab.crypto.ecdsa.ECKeyS256;
 import io.grpc.stub.StreamObserver;
-import org.web3j.crypto.ECKeyPair;
 import pb.*;
 
 import java.util.Map;
@@ -23,6 +22,15 @@ public interface GrpcClient {
      * @param observer contain methods of the onNext(), onComplete(), OnError().
      */
     void subscribe(pb.Broker.SubscriptionRequest.Type type, StreamObserver<Broker.Response> observer);
+
+    /**
+     * Subscribe to event notifications from BitXHub.
+     *
+     * @param type     subscribe type
+     * @param blockHeight the starting block height of the subscription data
+     * @param observer contain methods of the onNext(), onComplete(), OnError().
+     */
+    void subscribeAuditInfo(AuditInfo.AuditSubscriptionRequest.Type type, Long blockHeight, StreamObserver<Broker.Response> observer);
 
     /**
      * Reset ecdsa key.

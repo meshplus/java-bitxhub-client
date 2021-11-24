@@ -1,6 +1,7 @@
 package cn.dmlab.bitxhub;
 
-import cn.dmlab.crypto.ecdsa.ECKeyP256;
+import cn.dmlab.crypto.ecdsa.ECKeyS256;
+import cn.dmlab.utils.ByteUtil;
 import cn.dmlab.utils.SignUtils;
 import cn.dmlab.utils.Utils;
 import com.google.protobuf.ByteString;
@@ -13,6 +14,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.web3j.crypto.Keys;
+import pb.AuditInfo;
 import pb.BlockOuterClass;
 import pb.Broker;
 import pb.Transaction;
@@ -26,10 +29,13 @@ public class SubscribeTest {
 
     private Config config = Config.defaultConfig();
     byte[] from = config.getAddress();
-    byte[] to = new ECKeyP256().getAddress();
+    byte[] to = new ECKeyS256().getAddress();
 
     @Before
     public void setUp() {
+        // The corresponding address is 0x9E1D8be61dee418B83A47BE54a1777ca70e10E0F
+        config.setEcKey(ECKeyS256.fromPrivate(ByteUtil.hexStringToBytes("c0a264f1ebedddea680727dd3177adbe765393e3eb6f9ce75417d9675e19a4ad")));
+        from = config.getAddress();
         client = new GrpcClientImpl(config);
     }
 
@@ -57,6 +63,7 @@ public class SubscribeTest {
         StreamObserver<Broker.Response> observer = new StreamObserver<Broker.Response>() {
             @Override
             public void onNext(Broker.Response response) {
+                System.out.println("================================================");
                 ByteString data = response.getData();
                 BlockOuterClass.Block block = null;
                 try {
@@ -83,6 +90,54 @@ public class SubscribeTest {
         client.subscribe(Broker.SubscriptionRequest.Type.BLOCK, observer);
 
         sendTransaction();
+        asyncLatch.await();
+    }
+
+    // Need to be registered a id for the application of appchain1 chain,
+    // and register an audit node with address 0x9E1D8be61dee418B83A47BE54a1777ca70e10E0F, permission appchain1
+    @Test
+    public void subscribeAudit() throws InterruptedException {
+        CountDownLatch asyncLatch = new CountDownLatch(1);
+        StreamObserver<Broker.Response> observer = new StreamObserver<Broker.Response>() {
+            @Override
+            public void onNext(Broker.Response response) {
+                ByteString data = response.getData();
+                AuditInfo.AuditTxInfo info = null;
+                Transaction.TransactionData txData = null;
+                Transaction.InvokePayload payload = null;
+                try {
+                    info = AuditInfo.AuditTxInfo.parseFrom(data);
+                    if (!info.getTx().hasIBTP()){
+                        txData = Transaction.TransactionData.parseFrom(info.getTx().getPayload());
+                        payload = Transaction.InvokePayload.parseFrom(txData.getPayload());
+                        System.out.printf("from: %s, to: %s\n",
+                                Keys.toChecksumAddress(ByteUtil.toHexStringWithOx(info.getTx().getFrom().toByteArray())),
+                                Keys.toChecksumAddress(ByteUtil.toHexStringWithOx(info.getTx().getTo().toByteArray()))
+                        );
+                        System.out.printf("method: %s\n", payload.getMethod());
+                    }
+                } catch (InvalidProtocolBufferException e) {
+                    e.printStackTrace();
+                }
+                Assert.assertNotNull(info);
+                asyncLatch.countDown();
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                throwable.printStackTrace();
+                asyncLatch.countDown();
+            }
+
+            @Override
+            public void onCompleted() {
+                asyncLatch.countDown();
+            }
+        };
+
+
+        System.out.println(Keys.toChecksumAddress(ByteUtil.toHexStringWithOx(config.getAddress())));
+        client.subscribeAuditInfo(AuditInfo.AuditSubscriptionRequest.Type.AUDIT_NODE, new Long(1), observer);
         asyncLatch.await();
     }
 

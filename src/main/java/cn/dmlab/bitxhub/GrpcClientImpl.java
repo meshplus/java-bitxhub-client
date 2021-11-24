@@ -10,12 +10,14 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
 import io.grpc.netty.NegotiationType;
+import io.grpc.netty.NettyChannelBuilder;
 import io.grpc.stub.StreamObserver;
 import lombok.extern.slf4j.Slf4j;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.RetryPolicy;
 import net.jodah.failsafe.function.CheckedSupplier;
-import io.grpc.netty.NettyChannelBuilder;
+import org.web3j.crypto.Keys;
+import pb.*;
 
 import java.math.BigInteger;
 import java.time.Duration;
@@ -23,9 +25,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-
-import org.web3j.crypto.Keys;
-import pb.*;
 
 
 
@@ -85,6 +84,19 @@ public class GrpcClientImpl implements GrpcClient {
                 .setType(type)
                 .build();
         asyncStub.subscribe(request, observer);
+    }
+
+    @Override
+    public void subscribeAuditInfo(AuditInfo.AuditSubscriptionRequest.Type type, Long blockHeight, StreamObserver<Broker.Response> observer) {
+        check(Objects.nonNull(observer), "Observer must not be null");
+        check(Objects.nonNull(type), "Subscription type must not be null");
+        check(Objects.nonNull(blockHeight), "Subscription blockHeight must not be null");
+        AuditInfo.AuditSubscriptionRequest request = AuditInfo.AuditSubscriptionRequest.newBuilder()
+                .setType(type)
+                .setAuditNodeId(Keys.toChecksumAddress(ByteUtil.toHexStringWithOx(config.getAddress())))
+                .setBlockHeight(blockHeight)
+                .build();
+        asyncStub.subscribeAuditInfo(request, observer);
     }
 
     @Override
