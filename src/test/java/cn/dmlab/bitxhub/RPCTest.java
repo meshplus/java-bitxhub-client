@@ -1,6 +1,5 @@
 package cn.dmlab.bitxhub;
 
-import cn.dmlab.crypto.ecdsa.ECKeyP256;
 import cn.dmlab.crypto.ecdsa.ECKeyS256;
 import cn.dmlab.utils.ByteUtil;
 import cn.dmlab.utils.SignUtils;
@@ -25,12 +24,15 @@ public class RPCTest {
     private GrpcClient client;
 
     private Config config = Config.defaultConfig();
-    byte[] from = config.getAddress();
-    byte[] to = new ECKeyP256().getAddress();
+    private Config config1 = Config.defaultConfig();
+    byte[] from, to;
 
     @Before
     public void setUp() {
         config.setEcKey(ECKeyS256.fromPrivate(ByteUtil.hexStringToBytes("b6477143e17f889263044f6cf463dc37177ac4526c4c39a7a344198457024a2f")));
+        from = config.getAddress();
+        config1.setEcKey(ECKeyS256.fromPrivate(ByteUtil.hexStringToBytes("05c3708d30c2c72c4b36314a41f30073ab18ea226cf8c6b9f566720bfe2e8631")));
+        to = config1.getAddress();
         client = new GrpcClientImpl(config);
     }
 
@@ -88,7 +90,8 @@ public class RPCTest {
                 .setTimestamp(Utils.genTimestamp())
                 .setPayload(Transaction.TransactionData.newBuilder().setAmount("100000").build().toByteString())
                 .build();
-        String txHash = client.sendTransaction(unsignedTx, null);
+        Transaction.BxhTransaction signedTx = SignUtils.sign(unsignedTx, config.getEcKey());
+        String txHash = client.sendTransaction(signedTx, null);
         Assert.assertNotNull(txHash);
     }
 
