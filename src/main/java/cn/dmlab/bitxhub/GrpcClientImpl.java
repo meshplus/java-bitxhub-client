@@ -60,12 +60,18 @@ public class GrpcClientImpl implements GrpcClient {
                     .build();
         }
 
-        Metadata metadata = new Metadata();
-        metadata.put(Metadata.Key.of("account", Metadata.ASCII_STRING_MARSHALLER), Keys.toChecksumAddress(ByteUtil.toHexStringWithOx(config.getAddress())));
-        ClientInterceptor clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(metadata);
+        io.grpc.Channel channelTmp;
+        if (config.getAccessSwitch()) {
+            Metadata metadata = new Metadata();
+            metadata.put(Metadata.Key.of("account", Metadata.ASCII_STRING_MARSHALLER), Keys.toChecksumAddress(ByteUtil.toHexStringWithOx(config.getAddress())));
+            ClientInterceptor clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(metadata);
+            channelTmp = ClientInterceptors.intercept(channel, clientInterceptor);
+        } else {
+            channelTmp = this.channel;
+        }
 
-        blockingStub = ChainBrokerGrpc.newBlockingStub(ClientInterceptors.intercept(channel, clientInterceptor));
-        asyncStub = ChainBrokerGrpc.newStub(ClientInterceptors.intercept(channel, clientInterceptor));
+        blockingStub = ChainBrokerGrpc.newBlockingStub(channelTmp);
+        asyncStub = ChainBrokerGrpc.newStub(channelTmp);
     }
 
     public void shutdown() throws InterruptedException {

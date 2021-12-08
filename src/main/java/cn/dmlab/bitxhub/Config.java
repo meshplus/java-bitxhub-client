@@ -24,6 +24,8 @@ public class Config {
     private ECKeyS256 ecKey;
     private SslContext sslContext;
 
+    private Boolean accessSwitch;
+
     public void checkConfig() {
         if (Strings.isNullOrEmpty(host) || port == null) {
             throw new RuntimeException("address or port is empty");
@@ -41,7 +43,7 @@ public class Config {
         String host = "localhost";
         Integer port = 60011;
         ECKeyS256 ecKey = new ECKeyS256();
-        return new Config(host, port, ecKey, null);
+        return new Config(host, port, ecKey, null, true);
     }
 
     /**
@@ -58,7 +60,8 @@ public class Config {
         return new Config(host, port, ecKey,
                 buildSslContext(Config.class.getClassLoader().getResource("agency.cert").getPath(),
                         Config.class.getClassLoader().getResource("gateway.cert").getPath(),
-                        Config.class.getClassLoader().getResource("gateway.priv").getPath()));
+                        Config.class.getClassLoader().getResource("gateway.priv").getPath()),
+                true);
     }
 
     /**
