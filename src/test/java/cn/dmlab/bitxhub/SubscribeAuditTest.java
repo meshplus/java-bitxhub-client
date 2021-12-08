@@ -7,7 +7,6 @@ import cn.dmlab.utils.Utils;
 import com.alibaba.fastjson.JSONObject;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
-import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.After;
@@ -193,29 +192,8 @@ public class SubscribeAuditTest {
             registerAppchain("appchain1", "应用链1", Keys.toChecksumAddress(ByteUtil.toHexStringWithOx(appchainAdmin)));
             registerNode(Keys.toChecksumAddress(ByteUtil.toHexStringWithOx(nodeAccount)), "审计节点", "appchain1");
             Thread.sleep(5000);
-        } catch (InterruptedException | StatusRuntimeException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            Chain.ChainMeta chainMeta = nodeCli.getChainMeta();
-            Assert.assertFalse(chainMeta.getHeight() > 0);
-        } catch (StatusRuntimeException e) {
-            Assert.assertNotNull(e);
-            e.printStackTrace();
-        }
-
-        try {
-            Broker.GetBlocksResponse response = nodeCli.getBlocks(1L, 10L);
-            Assert.assertFalse(response.getBlocksCount() > 0);
-        } catch (StatusRuntimeException e) {
-            Assert.assertNotNull(e);
-            e.printStackTrace();
-        }
-
-        try {
-            nodeCli.subscribeAuditInfo(AuditInfo.AuditSubscriptionRequest.Type.AUDIT_NODE, 1L, observer);
-        } catch (StatusRuntimeException e) {
+            nodeCli.subscribeAuditInfo(AuditInfo.AuditSubscriptionRequest.Type.AUDIT_NODE, new Long(1), observer);
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
