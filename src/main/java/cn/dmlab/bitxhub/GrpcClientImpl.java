@@ -6,11 +6,10 @@ import cn.dmlab.utils.SignUtils;
 import cn.dmlab.utils.Utils;
 import com.google.common.base.Strings;
 import com.google.protobuf.ByteString;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.StatusRuntimeException;
+import io.grpc.*;
 import io.grpc.netty.NegotiationType;
 import io.grpc.netty.NettyChannelBuilder;
+import io.grpc.stub.MetadataUtils;
 import io.grpc.stub.StreamObserver;
 import lombok.extern.slf4j.Slf4j;
 import net.jodah.failsafe.Failsafe;
@@ -60,8 +59,13 @@ public class GrpcClientImpl implements GrpcClient {
                     .negotiationType(NegotiationType.TLS)
                     .build();
         }
-        blockingStub = ChainBrokerGrpc.newBlockingStub(channel);
-        asyncStub = ChainBrokerGrpc.newStub(channel);
+
+        Metadata metadata = new Metadata();
+        metadata.put(Metadata.Key.of("account", Metadata.ASCII_STRING_MARSHALLER), Keys.toChecksumAddress(ByteUtil.toHexStringWithOx(config.getAddress())));
+        ClientInterceptor clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(metadata);
+
+        blockingStub = ChainBrokerGrpc.newBlockingStub(ClientInterceptors.intercept(channel, clientInterceptor));
+        asyncStub = ChainBrokerGrpc.newStub(ClientInterceptors.intercept(channel, clientInterceptor));
     }
 
     public void shutdown() throws InterruptedException {
