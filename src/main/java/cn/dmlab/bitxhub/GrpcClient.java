@@ -196,6 +196,14 @@ public interface GrpcClient {
     void getBlockHeaders(Long begin, Long end, StreamObserver<BlockOuterClass.BlockHeader> streamObserver);
 
     /**
+     * Get the missing block header from BitXHub
+     *
+     * @param begin     begin signal
+     * @param end       end signal
+     */
+    Broker.GetBlockHeadersResponse getBlockHeaders(Long begin, Long end);
+
+    /**
      * Call this interface to deploy a WASM contract to BitXHub
      *
      * @param contract contract bytes array
