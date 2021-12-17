@@ -384,7 +384,7 @@ public class GrpcClientImpl implements GrpcClient {
     public void getBlockHeaders(Long begin, Long end, StreamObserver<BlockOuterClass.BlockHeader> streamObserver) {
         check(Objects.nonNull(streamObserver), "StreamObserver must not be null");
         check(begin >= 0, "begin must not be negative");
-        check(end >= begin, "End must not be negative");
+        check(end >= begin, "end must greater than begin");
 
         Broker.GetBlockHeaderRequest request = Broker.GetBlockHeaderRequest.newBuilder()
                 .setBegin(begin)
@@ -397,6 +397,18 @@ public class GrpcClientImpl implements GrpcClient {
         if (!test) {
             throw new IllegalArgumentException(message);
         }
+    }
+
+    @Override
+    public Broker.GetBlockHeadersResponse getBlockHeaders(Long start, Long end) {
+        check(start >= 0, "start must not be negative");
+        check(end >= start, "end must greater than start");
+
+        Broker.GetBlockHeadersRequest request = Broker.GetBlockHeadersRequest.newBuilder()
+                .setStart(start)
+                .setEnd(end)
+                .build();
+        return blockingStub.getBlockHeaders(request);
     }
 
     @Override
