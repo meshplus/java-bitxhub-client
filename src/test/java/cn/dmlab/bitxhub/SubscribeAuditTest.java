@@ -109,9 +109,11 @@ public class SubscribeAuditTest {
     }
 
     public void registerAppchain(String chainID, String chainName, String appchainAdmin){
+        ECKeyS256 privKey = ECKeyS256.fromPrivate(ByteUtil.hexStringToBytes("c0a264f1ebedddea680727dd3177adbe765393e3eb6f9ce75417d9675e19a4ad"));
         ArgOuterClass.Arg[] args = Types.toArgArray(
                 Types.string(chainID),
                 Types.string(chainName),
+                Types.bytes(privKey.getPubKey()),
                 Types.string("ETH"),
                 Types.bytes(new byte[0]),
                 Types.string("broker"),
