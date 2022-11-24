@@ -3,22 +3,15 @@ syntax = "proto3";
 package pb;
 
 import "google/api/annotations.proto";
-import "transaction.proto";
+import "bxh_transaction.proto";
 import "receipt.proto";
 import "block.proto";
 import "chain.proto";
-import "audit_info.proto";
 
 service ChainBroker {
   rpc Subscribe (SubscriptionRequest) returns (stream Response) {
     option (google.api.http) = {
       get: "/v1/subscription"
-    };
-  }
-
-  rpc SubscribeAuditInfo (pb.AuditSubscriptionRequest) returns (stream Response) {
-    option (google.api.http) = {
-      get: "/v1/audit_subscription"
     };
   }
 
@@ -69,12 +62,6 @@ service ChainBroker {
   rpc GetBlocks (GetBlocksRequest) returns (GetBlocksResponse) {
     option (google.api.http) = {
       get: "/v1/blocks"
-    };
-  }
-
-  rpc GetHappyBlocks (GetBlocksRequest) returns (GetHappyBlocksResponse) {
-    option (google.api.http) = {
-      get: "/v1/happy_block"
     };
   }
 
@@ -139,16 +126,7 @@ service ChainBroker {
       body: "*"
     };
   }
-
-  rpc GetChainID (Empty) returns (Response) {
-    option (google.api.http) = {
-      post: "/v1/get_chain_id"
-      body: "*"
-    };
-  }
 }
-
-message Empty {}
 
 message GetBlockHeaderRequest {
   uint64 begin = 1;
@@ -204,10 +182,6 @@ message GetBlocksResponse {
   repeated pb.Block blocks = 1;
 }
 
-message GetHappyBlocksResponse {
-  repeated pb.HappyBlock blocks = 1;
-}
-
 message GetBlockHeadersRequest {
   uint64 start = 1;
   uint64 end = 2;
@@ -243,8 +217,8 @@ message GetMultiSignsRequest {
 }
 
 message GetTransactionResponse {
-  pb.BxhTransaction tx = 1;
-  pb.TransactionMeta tx_meta = 2;
+  bytes txs = 1; // [(gogoproto.customtype) = "Transactions"];
+  repeated bytes tx_meta = 2; // [(gogoproto.customtype) = "TransactionMeta"];
 }
 
 message VerifiedTx {
@@ -253,11 +227,9 @@ message VerifiedTx {
 }
 
 message InterchainTxWrapper {
-  repeated bytes l2Roots = 1;
+  repeated bytes l2Roots = 1; // [(gogoproto.customtype) = "github.com/meshplus/bitxhub-kit/types.Hash"];
   repeated VerifiedTx transactions = 2;
   uint64 height = 3;
-  repeated bytes timeout_l2Roots = 4;
-  repeated string timeout_ibtps = 5;
 }
 
 message InterchainTxWrappers {

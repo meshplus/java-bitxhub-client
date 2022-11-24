@@ -5,6 +5,7 @@ import cn.dmlab.utils.ByteUtil;
 import cn.dmlab.utils.SignUtils;
 import cn.dmlab.utils.Utils;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.After;
 import org.junit.Assert;
@@ -14,7 +15,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import pb.Broker;
 import pb.ReceiptOuterClass;
-import pb.Transaction;
+import pb.BxhTransactionOuterClass;
 
 
 @RunWith(JUnit4.class)
@@ -49,29 +50,60 @@ public class RPCTest {
     }
 
     @Test
-    public void getTransaction() {
-        Transaction.BxhTransaction unsignedTx = Transaction.BxhTransaction.newBuilder()
+    public void getTransaction() throws InvalidProtocolBufferException {
+        BxhTransactionOuterClass.BxhTransaction unsignedTx = BxhTransactionOuterClass.BxhTransaction.newBuilder()
                 .setFrom(ByteString.copyFrom(from))
                 .setTo(ByteString.copyFrom(to))
                 .setTimestamp(Utils.genTimestamp())
-                .setPayload(Transaction.TransactionData.newBuilder().setAmount("100000").build().toByteString())
+                .setPayload(BxhTransactionOuterClass.TransactionData.newBuilder().setAmount("100000").build().toByteString())
                 .build();
         ReceiptOuterClass.Receipt receipt = client.sendTransactionWithReceipt(unsignedTx, null);
 
         Broker.GetTransactionResponse transactionResponse = client.getTransaction(ByteUtil.toHexStringWithOx(receipt.getTxHash().toByteArray()));
 
-        Assert.assertEquals(ByteUtil.toHexStringWithOx(transactionResponse.getTx().getTransactionHash().toByteArray()),
+        BxhTransactionOuterClass.TransactionMeta transactionMeta = BxhTransactionOuterClass.TransactionMeta.parseFrom(transactionResponse.getTxMeta(0));
+
+        long size = parseLittleEndianLong(transactionResponse.getTxs().toByteArray());
+
+        byte[] txBytes = new byte[(int)size];
+        System.arraycopy(transactionResponse.getTxs().toByteArray(), 8, txBytes, 0, (int)size);
+        BxhTransactionOuterClass.BxhTransaction tx = parseTx(txBytes, (int)size);
+
+        Assert.assertEquals(ByteUtil.toHexStringWithOx(tx.getTransactionHash().toByteArray()),
                 ByteUtil.toHexStringWithOx(receipt.getTxHash().toByteArray()));
 
     }
 
+    public BxhTransactionOuterClass.BxhTransaction parseTx(byte[] data, int size) throws InvalidProtocolBufferException {
+        int typ = (int)data[0];
+        if (typ == 0) {
+            byte[] bxhTxBytes = new byte[size-1];
+            System.arraycopy(data, 1, bxhTxBytes, 0, size-1);
+            return BxhTransactionOuterClass.BxhTransaction.parseFrom(bxhTxBytes);
+        }
+        return BxhTransactionOuterClass.BxhTransaction.newBuilder().build();
+    }
+
+    public long parseLittleEndianLong(byte[] data) {
+        long tmp = (long)data[0] & 0xFF;
+        tmp += ((long)data[1] & 0xFF) << 8;
+        tmp += ((long)data[2] & 0xFF) << 16;
+        tmp += ((long)data[3] & 0xFF) << 24;
+        tmp += ((long)data[4] & 0xFF) << 32;
+        tmp += ((long)data[5] & 0xFF) << 40;
+        tmp += ((long)data[6] & 0xFF) << 48;
+        tmp += ((long)data[7] & 0xFF) << 56;
+
+        return tmp;
+    }
+
     @Test
     public void getReceipt() {
-        Transaction.BxhTransaction unsignedTx = Transaction.BxhTransaction.newBuilder()
+        BxhTransactionOuterClass.BxhTransaction unsignedTx = BxhTransactionOuterClass.BxhTransaction.newBuilder()
                 .setFrom(ByteString.copyFrom(from))
                 .setTo(ByteString.copyFrom(to))
                 .setTimestamp(Utils.genTimestamp())
-                .setPayload(Transaction.TransactionData.newBuilder()
+                .setPayload(BxhTransactionOuterClass.TransactionData.newBuilder()
                         .setAmount("100000")
                         .build().toByteString())
                 .build();
@@ -84,13 +116,13 @@ public class RPCTest {
 
     @Test
     public void sendTransaction() {
-        Transaction.BxhTransaction unsignedTx = Transaction.BxhTransaction.newBuilder()
+        BxhTransactionOuterClass.BxhTransaction unsignedTx = BxhTransactionOuterClass.BxhTransaction.newBuilder()
                 .setFrom(ByteString.copyFrom(from))
                 .setTo(ByteString.copyFrom(to))
                 .setTimestamp(Utils.genTimestamp())
-                .setPayload(Transaction.TransactionData.newBuilder().setAmount("100000").build().toByteString())
+                .setPayload(BxhTransactionOuterClass.TransactionData.newBuilder().setAmount("100000").build().toByteString())
                 .build();
-        Transaction.BxhTransaction signedTx = SignUtils.sign(unsignedTx, config.getEcKey());
+        BxhTransactionOuterClass.BxhTransaction signedTx = SignUtils.sign(unsignedTx, config.getEcKey());
         String txHash = client.sendTransaction(signedTx, null);
         Assert.assertNotNull(txHash);
     }

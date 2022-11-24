@@ -24,15 +24,6 @@ public interface GrpcClient {
     void subscribe(pb.Broker.SubscriptionRequest.Type type, StreamObserver<Broker.Response> observer);
 
     /**
-     * Subscribe to event notifications from BitXHub.
-     *
-     * @param type     subscribe type
-     * @param blockHeight the starting block height of the subscription data
-     * @param observer contain methods of the onNext(), onComplete(), OnError().
-     */
-    void subscribeAuditInfo(AuditInfo.AuditSubscriptionRequest.Type type, Long blockHeight, StreamObserver<Broker.Response> observer);
-
-    /**
      * Reset ecdsa key.
      *
      * @param ecKey ecdsa key
@@ -46,7 +37,7 @@ public interface GrpcClient {
      * @param transaction Unsigned transaction
      * @return tx hash
      */
-    String sendTransaction(Transaction.BxhTransaction transaction, TransactOpts opts);
+    String sendTransaction(BxhTransactionOuterClass.BxhTransaction transaction, TransactOpts opts);
 
 
     /**
@@ -56,7 +47,7 @@ public interface GrpcClient {
      * @param transaction Unsigned transaction
      * @return tx hash
      */
-    String sendSignedTransaction(Transaction.BxhTransaction transaction);
+    String sendSignedTransaction(BxhTransactionOuterClass.BxhTransaction transaction);
 
 
     /**
@@ -89,7 +80,7 @@ public interface GrpcClient {
      * @param transaction Unsigned transaction
      * @return tx receipt
      */
-    ReceiptOuterClass.Receipt sendTransactionWithReceipt(Transaction.BxhTransaction transaction, TransactOpts opts);
+    ReceiptOuterClass.Receipt sendTransactionWithReceipt(BxhTransactionOuterClass.BxhTransaction transaction, TransactOpts opts);
 
     /**
      * Generate contract transaction with necessary parameters.
@@ -99,7 +90,7 @@ public interface GrpcClient {
      * @param args            method args
      * @return transaction
      */
-    Transaction.BxhTransaction generateContractTx(Transaction.TransactionData.VMType vmType, String contractAddress, String method, ArgOuterClass.Arg... args);
+    BxhTransactionOuterClass.BxhTransaction generateContractTx(BxhTransactionOuterClass.TransactionData.VMType vmType, String contractAddress, String method, ArgOuterClass.Arg... args);
 
     /**
      * Send view tx to chain and get the receipt.
@@ -107,7 +98,7 @@ public interface GrpcClient {
      * @param transaction Unsigned transaction
      * @return tx receipt
      */
-    ReceiptOuterClass.Receipt sendView(Transaction.BxhTransaction transaction);
+    ReceiptOuterClass.Receipt sendView(BxhTransactionOuterClass.BxhTransaction transaction);
     /**
      * Obtain block information from BitXHub.
      * The block header contains the basic information of the block,
@@ -127,16 +118,6 @@ public interface GrpcClient {
      * @return blocks info
      */
     Broker.GetBlocksResponse getBlocks(Long start, Long end);
-
-
-    /**
-     * Get happy blocks of the specified block height range.
-     *
-     * @param start start signal
-     * @param end   end signal
-     * @return blocks info
-     */
-    Broker.GetHappyBlocksResponse getHappyBlocks(Long start, Long end);
 
     /**
      * Get the status of the blockchain from BitXHub, normal or abnormal.
@@ -220,7 +201,7 @@ public interface GrpcClient {
      * @param args            method args
      * @return transaction receipt
      */
-    ReceiptOuterClass.Receipt invokeContract(Transaction.TransactionData.VMType vmType, String contractAddress, String method, ArgOuterClass.Arg... args);
+    ReceiptOuterClass.Receipt invokeContract(BxhTransactionOuterClass.TransactionData.VMType vmType, String contractAddress, String method, ArgOuterClass.Arg... args);
 
     /**
      * Invoke the BVM contract, BVM is BitXHub's blot contract.
@@ -249,12 +230,6 @@ public interface GrpcClient {
      * @return
      */
     Map<String, String> getMultiSigns(pb.Broker.GetMultiSignsRequest.Type type, String content);
-
-    /**
-     * Get the BitXHub chain id
-     * @return
-     */
-    String getChainID();
 
     /**
      * Get the BitXHub chain TPS

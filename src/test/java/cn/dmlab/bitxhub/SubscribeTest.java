@@ -15,7 +15,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import pb.BlockOuterClass;
 import pb.Broker;
-import pb.Transaction;
+import pb.BxhTransactionOuterClass;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -40,13 +40,13 @@ public class SubscribeTest {
 
     @Test
     public void sendTransaction() {
-        Transaction.BxhTransaction unsignedTx = Transaction.BxhTransaction.newBuilder()
+        BxhTransactionOuterClass.BxhTransaction unsignedTx = BxhTransactionOuterClass.BxhTransaction.newBuilder()
                 .setFrom(ByteString.copyFrom(from))
                 .setTo(ByteString.copyFrom(to))
                 .setTimestamp(Utils.genTimestamp())
-                .setPayload(Transaction.TransactionData.newBuilder().setAmount("100000").build().toByteString())
+                .setPayload(BxhTransactionOuterClass.TransactionData.newBuilder().setAmount("100000").build().toByteString())
                 .build();
-        Transaction.BxhTransaction signedTx = SignUtils.sign(unsignedTx, config.getEcKey());
+        BxhTransactionOuterClass.BxhTransaction signedTx = SignUtils.sign(unsignedTx, config.getEcKey());
         String txHash = client.sendTransaction(signedTx, null);
         Assert.assertNotNull(txHash);
     }

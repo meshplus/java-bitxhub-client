@@ -41,11 +41,11 @@ public class SyncTest {
     }
 
     public void sendTransaction() {
-        Transaction.BxhTransaction unsignedTx = Transaction.BxhTransaction.newBuilder()
+        BxhTransactionOuterClass.BxhTransaction unsignedTx = BxhTransactionOuterClass.BxhTransaction.newBuilder()
                 .setFrom(ByteString.copyFrom(from))
                 .setTo(ByteString.copyFrom(to))
                 .setTimestamp(Utils.genTimestamp())
-                .setPayload(Transaction.TransactionData.newBuilder().setAmount("100000").build().toByteString())
+                .setPayload(BxhTransactionOuterClass.TransactionData.newBuilder().setAmount("100000").build().toByteString())
                 .build();
         String txHash = client.sendTransaction(unsignedTx, null);
         Assert.assertNotNull(txHash);

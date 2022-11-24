@@ -11,7 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import pb.ReceiptOuterClass;
-import pb.Transaction;
+import pb.BxhTransactionOuterClass;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -60,12 +60,12 @@ public class ContractTest {
     @Test
     public void invokeBVMContract() {
         String result = "10";
-        ReceiptOuterClass.Receipt receipt = client.invokeContract(Transaction.TransactionData.VMType.BVM
+        ReceiptOuterClass.Receipt receipt = client.invokeContract(BxhTransactionOuterClass.TransactionData.VMType.BVM
                 , BVMAddr.STORE_CONTRACT_ADDR, "Set", Types.string("a"), Types.string(result));
         Assert.assertNotNull(receipt);
 
 
-        ReceiptOuterClass.Receipt receipt1 = client.sendView(client.generateContractTx(Transaction.TransactionData.VMType.BVM
+        ReceiptOuterClass.Receipt receipt1 = client.sendView(client.generateContractTx(BxhTransactionOuterClass.TransactionData.VMType.BVM
                 , BVMAddr.STORE_CONTRACT_ADDR, "Get", Types.string("a")));
         Assert.assertEquals(receipt1.getRet().toStringUtf8(), result);
 

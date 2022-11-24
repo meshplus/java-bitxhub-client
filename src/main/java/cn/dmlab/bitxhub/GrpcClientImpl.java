@@ -97,19 +97,6 @@ public class GrpcClientImpl implements GrpcClient {
     }
 
     @Override
-    public void subscribeAuditInfo(AuditInfo.AuditSubscriptionRequest.Type type, Long blockHeight, StreamObserver<Broker.Response> observer) {
-        check(Objects.nonNull(observer), "Observer must not be null");
-        check(Objects.nonNull(type), "Subscription type must not be null");
-        check(Objects.nonNull(blockHeight), "Subscription blockHeight must not be null");
-        AuditInfo.AuditSubscriptionRequest request = AuditInfo.AuditSubscriptionRequest.newBuilder()
-                .setType(type)
-                .setAuditNodeId(Keys.toChecksumAddress(ByteUtil.toHexStringWithOx(config.getAddress())))
-                .setBlockHeight(blockHeight)
-                .build();
-        asyncStub.subscribeAuditInfo(request, observer);
-    }
-
-    @Override
     public void setECKey(ECKeyS256 ecKey) {
         check(!Objects.isNull(ecKey), "Ecdsa key must not be null");
         this.config.setEcKey(ecKey);
@@ -117,7 +104,7 @@ public class GrpcClientImpl implements GrpcClient {
 
 
     @Override
-    public String sendTransaction(Transaction.BxhTransaction transaction, TransactOpts opts) {
+    public String sendTransaction(BxhTransactionOuterClass.BxhTransaction transaction, TransactOpts opts) {
         check(!Objects.isNull(transaction.getFrom()), "From address must not be null");
         check(!Objects.isNull(transaction.getTo()), "To address must not be null");
         check(!Objects.isNull(transaction.getSignature()), "Signature must not be null");
@@ -142,7 +129,7 @@ public class GrpcClientImpl implements GrpcClient {
             }
         }
         transaction = transaction.toBuilder().setNonce(nonce).build();
-        Transaction.BxhTransaction signedTx = SignUtils.sign(transaction, config.getEcKey());
+        BxhTransactionOuterClass.BxhTransaction signedTx = SignUtils.sign(transaction, config.getEcKey());
         Broker.TransactionHashMsg transactionHashMsg = blockingStub.sendTransaction(signedTx);
 
         if (transactionHashMsg == null) {
@@ -153,7 +140,7 @@ public class GrpcClientImpl implements GrpcClient {
     }
 
     @Override
-    public String sendSignedTransaction(Transaction.BxhTransaction transaction) {
+    public String sendSignedTransaction(BxhTransactionOuterClass.BxhTransaction transaction) {
         Broker.TransactionHashMsg transactionHashMsg = blockingStub.sendTransaction(transaction);
 
         if (transactionHashMsg == null) {
@@ -172,18 +159,18 @@ public class GrpcClientImpl implements GrpcClient {
 
 
     @Override
-    public ReceiptOuterClass.Receipt sendTransactionWithReceipt(Transaction.BxhTransaction transaction, TransactOpts opts) {
+    public ReceiptOuterClass.Receipt sendTransactionWithReceipt(BxhTransactionOuterClass.BxhTransaction transaction, TransactOpts opts) {
         String txHash = this.sendTransaction(transaction, opts);
         return this.getReceipt(txHash);
     }
 
     @Override
-    public Transaction.BxhTransaction generateContractTx(Transaction.TransactionData.VMType vmType, String contractAddress, String method, ArgOuterClass.Arg... args) {
+    public BxhTransactionOuterClass.BxhTransaction generateContractTx(BxhTransactionOuterClass.TransactionData.VMType vmType, String contractAddress, String method, ArgOuterClass.Arg... args) {
         check(!Strings.isNullOrEmpty(contractAddress), "Contract address must not be null or empty");
         check(!Strings.isNullOrEmpty(method), "Method must not be null or empty");
         check(config.getEcKey() != null, "Ecdsa key must not be null");
 
-        Transaction.InvokePayload invokePayload = Transaction.InvokePayload.newBuilder()
+        BxhTransactionOuterClass.InvokePayload invokePayload = BxhTransactionOuterClass.InvokePayload.newBuilder()
                 .setMethod(method)
                 .build();
 
@@ -193,24 +180,24 @@ public class GrpcClientImpl implements GrpcClient {
             }
         }
 
-        Transaction.TransactionData td = Transaction.TransactionData.newBuilder()
+        BxhTransactionOuterClass.TransactionData td = BxhTransactionOuterClass.TransactionData.newBuilder()
                 .setVmType(vmType)
-                .setType(Transaction.TransactionData.Type.INVOKE)
+                .setType(BxhTransactionOuterClass.TransactionData.Type.INVOKE)
                 .setPayload(invokePayload.toByteString())
                 .build();
 
-        Transaction.BxhTransaction tx = Transaction.BxhTransaction.newBuilder()
+        BxhTransactionOuterClass.BxhTransaction tx = BxhTransactionOuterClass.BxhTransaction.newBuilder()
                 .setFrom(ByteString.copyFrom(config.getAddress()))
                 .setTo(ByteString.copyFrom(ByteUtil.hexStringToBytes(contractAddress)))
                 .setPayload(td.toByteString())
                 .setTimestamp(Utils.genTimestamp())
                 .build();
-        Transaction.BxhTransaction signedTx = SignUtils.sign(tx, config.getEcKey());
+        BxhTransactionOuterClass.BxhTransaction signedTx = SignUtils.sign(tx, config.getEcKey());
         return signedTx;
     }
 
     @Override
-    public ReceiptOuterClass.Receipt sendView(Transaction.BxhTransaction transaction) {
+    public ReceiptOuterClass.Receipt sendView(BxhTransactionOuterClass.BxhTransaction transaction) {
         return this.blockingStub.sendView(transaction);
     }
 
@@ -278,13 +265,13 @@ public class GrpcClientImpl implements GrpcClient {
         check(contract != null, "Contract bytes must not be null");
         check(config.getEcKey() != null, "Ecdsa key must not be null");
         // build transaction with INVOKE type.
-        Transaction.TransactionData td = Transaction.TransactionData.newBuilder()
-                .setType(Transaction.TransactionData.Type.INVOKE)
-                .setVmType(Transaction.TransactionData.VMType.XVM)
+        BxhTransactionOuterClass.TransactionData td = BxhTransactionOuterClass.TransactionData.newBuilder()
+                .setType(BxhTransactionOuterClass.TransactionData.Type.INVOKE)
+                .setVmType(BxhTransactionOuterClass.TransactionData.VMType.XVM)
                 .setPayload(ByteString.copyFrom(contract))
                 .build();
 
-        Transaction.BxhTransaction tx = Transaction.BxhTransaction.newBuilder()
+        BxhTransactionOuterClass.BxhTransaction tx = BxhTransactionOuterClass.BxhTransaction.newBuilder()
                 .setFrom(ByteString.copyFrom(config.getAddress()))
                 .setTo(ByteString.copyFrom(new byte[20])) // set to_address 0
                 .setNonce(Utils.genNonce())
@@ -300,20 +287,20 @@ public class GrpcClientImpl implements GrpcClient {
     }
 
     @Override
-    public ReceiptOuterClass.Receipt invokeContract(Transaction.TransactionData.VMType vmType, String contractAddress, String method, ArgOuterClass.Arg... args) {
-        Transaction.BxhTransaction tx = this.generateContractTx(vmType,contractAddress,method, args);
+    public ReceiptOuterClass.Receipt invokeContract(BxhTransactionOuterClass.TransactionData.VMType vmType, String contractAddress, String method, ArgOuterClass.Arg... args) {
+        BxhTransactionOuterClass.BxhTransaction tx = this.generateContractTx(vmType,contractAddress,method, args);
         return this.sendTransactionWithReceipt(tx, null);
     }
 
     @Override
     public ReceiptOuterClass.Receipt invokeBVMContract(String contractAddress, String method, ArgOuterClass.Arg... args) {
-        return this.invokeContract(Transaction.TransactionData.VMType.BVM,
+        return this.invokeContract(BxhTransactionOuterClass.TransactionData.VMType.BVM,
                 contractAddress, method, args);
     }
 
     @Override
     public ReceiptOuterClass.Receipt invokeXVMContract(String contractAddress, String method, ArgOuterClass.Arg... args) {
-        return this.invokeContract(Transaction.TransactionData.VMType.XVM,
+        return this.invokeContract(BxhTransactionOuterClass.TransactionData.VMType.XVM,
                 contractAddress, method, args);
     }
 
@@ -328,20 +315,6 @@ public class GrpcClientImpl implements GrpcClient {
                 .build();
         return blockingStub.getBlocks(request);
     }
-
-
-    @Override
-    public Broker.GetHappyBlocksResponse getHappyBlocks(Long start, Long end) {
-        check(start >= 0, "Start must not be negative");
-        check(end >= start, "End must not be negative");
-
-        Broker.GetBlocksRequest request = Broker.GetBlocksRequest.newBuilder()
-                .setStart(start)
-                .setEnd(end)
-                .build();
-        return blockingStub.getHappyBlocks(request);
-    }
-
 
     @Override
     public Broker.Response getNetworkMeta() {
@@ -423,12 +396,6 @@ public class GrpcClientImpl implements GrpcClient {
             result.put(e.getKey(), e.getValue().toStringUtf8());
         }
         return result;
-    }
-
-    @Override
-    public String getChainID() {
-        Broker.Response chainID = blockingStub.getChainID(Broker.Empty.newBuilder().build());
-        return chainID.getData().toStringUtf8();
     }
 
     @Override

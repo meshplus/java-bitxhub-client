@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package pb;
+
+import "arg.proto";
+import "ibtp.proto";
+
+message BxhTransaction {
+  bytes version = 1;
+  bytes from = 2; // [(gogoproto.customtype) = "github.com/meshplus/bitxhub-kit/types.Address"];
+  bytes to = 3; // [(gogoproto.customtype) = "github.com/meshplus/bitxhub-kit/types.Address"];
+  int64 timestamp = 4;
+  bytes transaction_hash = 5; // [(gogoproto.customtype) = "github.com/meshplus/bitxhub-kit/types.Hash"];
+  bytes payload = 6;
+  pb.IBTP IBTP = 7;
+  uint64 nonce = 8;
+  string amount  = 9;
+  uint32 typ = 10;
+  bytes signature = 11;
+  bytes extra = 12;
+}
+
+message TransactionData {
+  enum Type {
+    NORMAL = 0;
+    INVOKE = 1;
+    UPDATE = 2;
+    FREEZE = 3;
+    UNFREEZE = 4;
+  }
+  Type type = 1;
+  string amount = 2;
+  enum VMType {
+    BVM = 0;
+    XVM = 1;
+  }
+  VMType vm_type = 3;
+  bytes payload = 4;
+  bytes extra = 5;
+}
+
+message InvokePayload {
+  string method = 1;
+  repeated Arg args = 2;
+}
+
+message TransactionMeta {
+  bytes block_hash = 1;
+  uint64 block_height = 2;
+  uint64 index = 3;
+}
+
+message CrosschainTransactionExtra {
+  uint64 index = 1; // to_id index
+  bool status = 2; // receipt status
+  bytes ret = 3; // receipt result
+}
+
+message TransactionTracingMeta {
+  bytes receipt_hash = 1;
+  bytes confirm_hash = 2;
+}
+
+message TransactionSlice {
+  uint64 height = 1;
+  repeated BxhTransaction txs = 2;
+}
+
+message AssetExchangeInfo {
+  string id = 1;
+  string sender_on_src = 2;
+  string receiver_on_src = 3;
+  uint64 asset_on_src = 4;
+  string sender_on_dst = 5;
+  string receiver_on_dst = 6;
+  uint64 asset_on_dst = 7;
+}
+
+enum TransactionStatus {
+  BEGIN = 0;
+  SUCCESS = 1;
+  FAILURE = 2;
+}
+
+enum AssetExchangeStatus {
+  INIT = 0;
+  REDEEM = 1;
+  REFUND = 2;
+}

@@ -1,34 +1,22 @@
 syntax = "proto3";
 
 package pb;
-import "transaction.proto";
 
 message Block {
     BlockHeader block_header = 1;
-    bytes transactions = 2;// [(gogoproto.customtype) = "Transactions"]; // transaction set
-    bytes block_hash = 3;
+    bytes transactions = 2; // [(gogoproto.customtype) = "Transactions"]; // transaction set
+    bytes block_hash = 3; // [(gogoproto.customtype) = "github.com/meshplus/bitxhub-kit/types.Hash"];
     bytes signature = 4;
     bytes extra = 5;
 }
 
 message BlockHeader {
     uint64 number = 1;
-    bytes state_root = 2;
-    bytes tx_root = 3;
-    bytes receipt_root = 4;
-    bytes timeout_root = 5;
-    bytes parent_hash = 6;
-    int64 timestamp = 7;
-    bytes version = 8;
-    bytes Bloom = 9;
-}
-
-message HappyBlock {
-    BlockHeader block_header = 1;
-    repeated pb.BxhTransaction bxh_txs = 2;
-    repeated bytes eth_txs = 3;
-    bytes block_hash = 4;
-    bytes signature = 5;
-    bytes extra = 6;
-    repeated uint64 index = 7;
+    bytes state_root = 2; // [(gogoproto.customtype) = "github.com/meshplus/bitxhub-kit/types.Hash"];
+    bytes tx_root = 3; // [(gogoproto.customtype) = "github.com/meshplus/bitxhub-kit/types.Hash"];
+    bytes receipt_root = 4; // [(gogoproto.customtype) = "github.com/meshplus/bitxhub-kit/types.Hash"];
+    bytes parent_hash = 5; // [(gogoproto.customtype) = "github.com/meshplus/bitxhub-kit/types.Hash"];
+    int64 timestamp = 6;
+    bytes version = 7;
+    bytes Bloom = 8; // [(gogoproto.customtype) = "github.com/meshplus/bitxhub-kit/types.Bloom"];
 }
