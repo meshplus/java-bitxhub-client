@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package pb;
 
+import "transaction.proto";
 
 message Receipt {
     enum Status {
@@ -17,6 +18,7 @@ message Receipt {
     repeated EvmLog evm_logs = 7;
     bytes bloom = 8;
     bytes contract_address = 9;
+    TransactionStatus tx_status = 10;
 }
 
 message Receipts {
@@ -37,6 +39,7 @@ message Event {
         AUDIT_ROLE = 9;
         AUDIT_INTERCHAIN = 10;
         AUDIT_DAPP = 11;
+        SERVICE = 12;
     }
     // Transaction Hash
     bytes tx_hash = 1;
@@ -52,15 +55,15 @@ message EvmLog {
 
     bytes data = 3;
 
-    uint64 block_number = 4;
+    uint64 blockNumber = 4;
 
-    bytes tx_hash = 5;
+    bytes transactionHash = 5;
 
-    uint64 tx_index = 6;
+    uint64 transactionIndex = 6;
 
-    bytes block_hash = 7;
+    bytes blockHash = 7;
 
-    uint64 index = 8;
+    uint64 logIndex = 8;
 
     bool removed = 9;
 }

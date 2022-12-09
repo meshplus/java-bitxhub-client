@@ -9,6 +9,7 @@ message InterchainMetaS {
   repeated bytes l2Roots = 2;
   StringStringSliceMap timeoutCounter = 3;
   repeated bytes timeoutL2Roots = 4;
+  StringStringSliceMap multiTxCounter = 5;
 }
 
 message InterchainS {

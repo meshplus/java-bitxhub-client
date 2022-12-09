@@ -252,6 +252,7 @@ public class GrpcClientImpl implements GrpcClient {
         Broker.GetBlockRequest request = Broker.GetBlockRequest.newBuilder()
                 .setValue(value)
                 .setType(type)
+                .setFullTx(true)
                 .build();
         return blockingStub.getBlock(request);
     }
@@ -325,6 +326,7 @@ public class GrpcClientImpl implements GrpcClient {
         Broker.GetBlocksRequest request = Broker.GetBlocksRequest.newBuilder()
                 .setStart(start)
                 .setEnd(end)
+                .setFullTx(true)
                 .build();
         return blockingStub.getBlocks(request);
     }
@@ -412,8 +414,8 @@ public class GrpcClientImpl implements GrpcClient {
     }
 
     @Override
-    public Map<String, String> getMultiSigns(Broker.GetMultiSignsRequest.Type type, String content) {
-        pb.Broker.GetMultiSignsRequest request = pb.Broker.GetMultiSignsRequest.newBuilder()
+    public Map<String, String> getMultiSigns(Broker.GetSignsRequest.Type type, String content) {
+        pb.Broker.GetSignsRequest request = pb.Broker.GetSignsRequest.newBuilder()
                 .setContent(content)
                 .setType(type)
                 .build();

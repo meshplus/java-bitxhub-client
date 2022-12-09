@@ -16,7 +16,7 @@ service ChainBroker {
     };
   }
 
-  rpc SubscribeAuditInfo (pb.AuditSubscriptionRequest) returns (stream Response) {
+  rpc SubscribeAuditInfo (AuditSubscriptionRequest) returns (stream Response) {
     option (google.api.http) = {
       get: "/v1/audit_subscription"
     };
@@ -41,6 +41,13 @@ service ChainBroker {
     };
   }
 
+  rpc SendTransactions (MultiTransaction) returns (MultiTransactionHash) {
+    option (google.api.http) = {
+      post: "/v1/transactions"
+      body: "*"
+    };
+  }
+
   rpc SendView (pb.BxhTransaction) returns (pb.Receipt) {
     option (google.api.http) = {
       post: "/v1/view"
@@ -51,6 +58,24 @@ service ChainBroker {
   rpc GetTransaction (TransactionHashMsg) returns (GetTransactionResponse) {
     option (google.api.http) = {
       get: "/v1/transaction/{tx_hash}"
+    };
+  }
+
+  rpc GetTransactionByBlockHashAndIndex (TransactionBlockHashAndIndexMsg) returns (GetTransactionResponse) {
+    option (google.api.http) = {
+      get: "/v1/transaction_by_block_hash_index/{block_hash}/{index}"
+    };
+  }
+
+  rpc GetTransactionByBlockNumberAndIndex (TransactionBlockNumberAndIndexMsg) returns (GetTransactionResponse) {
+    option (google.api.http) = {
+      get: "/v1/transaction_by_block_number_index/{block_number}/{index}"
+    };
+  }
+
+  rpc GetPendingTransaction (TransactionHashMsg) returns (GetTransactionResponse) {
+    option (google.api.http) = {
+      get: "/v1/pending_transaction/{tx_hash}"
     };
   }
 
@@ -102,9 +127,15 @@ service ChainBroker {
     };
   }
 
-  rpc GetMultiSigns (GetMultiSignsRequest) returns (SignResponse) {
+  rpc GetMultiSigns (GetSignsRequest) returns (SignResponse) {
     option (google.api.http) = {
-      get: "/v1/multi_sign/{content}"
+      get: "/v1/multi_sign"
+    };
+  }
+
+  rpc GetTssSigns (GetSignsRequest) returns (SignResponse) {
+    option (google.api.http) = {
+      get: "/v1/tss_sign"
     };
   }
 
@@ -165,13 +196,25 @@ message TransactionHashMsg {
   string tx_hash = 1;
 }
 
+message TransactionBlockNumberAndIndexMsg {
+  uint64 block_number = 1;
+  uint64 index = 2;
+}
+
+message TransactionBlockHashAndIndexMsg {
+  string block_hash = 1;
+  uint64 index = 2;
+}
+
 message GetBlockRequest {
   enum Type {
     HEIGHT = 0;
     HASH = 1;
+    LATEST = 2;
   }
   Type type = 1;
   string value = 2;
+  bool full_tx = 3;
 }
 
 message Request {
@@ -198,6 +241,7 @@ message Address {
 message GetBlocksRequest {
   uint64 start = 1;
   uint64 end = 2;
+  bool full_tx = 3;
 }
 
 message GetBlocksResponse {
@@ -231,15 +275,20 @@ message SubscriptionRequest {
   bytes extra = 2;
 }
 
-message GetMultiSignsRequest {
+message GetSignsRequest {
   enum Type {
-    ASSET_EXCHANGE = 0;
-    IBTP = 1;
-    BLOCK_HEADER = 2;
-    BURN = 3;
+    MULTI_ASSET_EXCHANGE = 0;
+    MULTI_IBTP_REQUEST = 1;
+    MULTI_IBTP_RESPONSE = 2;
+    MULTI_BLOCK_HEADER = 3;
+    MULTI_BURN = 4;
+    TSS_IBTP_REQUEST = 5;
+    TSS_IBTP_RESPONSE = 6;
+
   }
   Type type = 1;
   string content = 2;
+  bytes extra = 3;
 }
 
 message GetTransactionResponse {
@@ -250,6 +299,7 @@ message GetTransactionResponse {
 message VerifiedTx {
   pb.BxhTransaction tx = 1;
   bool valid = 2;
+  bool isBatch = 3;
 }
 
 message InterchainTxWrapper {
@@ -258,6 +308,7 @@ message InterchainTxWrapper {
   uint64 height = 3;
   repeated bytes timeout_l2Roots = 4;
   repeated string timeout_ibtps = 5;
+  repeated string multi_tx_ibtps = 6;
 }
 
 message InterchainTxWrappers {
@@ -295,4 +346,12 @@ message HeartBeatRespones {
     DEAD = 1;
   }
   Status status = 1;
+}
+
+message MultiTransaction {
+  repeated pb.BxhTransaction txs = 1;
+}
+
+message MultiTransactionHash {
+  repeated pb.TransactionHashMsg txHashList = 1;
 }

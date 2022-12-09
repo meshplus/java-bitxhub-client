@@ -248,7 +248,7 @@ public interface GrpcClient {
      * @param content
      * @return
      */
-    Map<String, String> getMultiSigns(pb.Broker.GetMultiSignsRequest.Type type, String content);
+    Map<String, String> getMultiSigns(pb.Broker.GetSignsRequest.Type type, String content);
 
     /**
      * Get the BitXHub chain id

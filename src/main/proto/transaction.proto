@@ -15,9 +15,15 @@ message BxhTransaction {
     pb.IBTP IBTP = 7;
     uint64 nonce = 8;
     string amount  = 9;
-    uint32 typ = 10;
+    TxType typ = 10;
     bytes signature = 11;
     bytes extra = 12;
+    int64 receiveTimestamp = 13;
+}
+
+enum TxType {
+    NormalBxhTx = 0;
+    EthSignedBxhTx = 1;
 }
 
 message TransactionData {
@@ -66,30 +72,45 @@ message TransactionSlice {
     repeated BxhTransaction txs = 2;
 }
 
-message AssetExchangeInfo {
-    string id = 1;
-    string sender_on_src = 2;
-    string receiver_on_src = 3;
-    uint64 asset_on_src = 4;
-    string sender_on_dst = 5;
-    string receiver_on_dst = 6;
-    uint64 asset_on_dst = 7;
-}
-
 enum TransactionStatus {
     BEGIN = 0;
-    SUCCESS = 1;
-    FAILURE = 2;
-    ROLLBACK = 3;
-}
-
-enum AssetExchangeStatus {
-    INIT = 0;
-    REDEEM = 1;
-    REFUND = 2;
+    BEGIN_FAILURE = 1;
+    BEGIN_ROLLBACK = 2;
+    SUCCESS = 3;
+    FAILURE = 4;
+    ROLLBACK = 5;
 }
 
 message TransactionRecord {
     uint64 height = 1;
     TransactionStatus status = 2;
+}
+
+message bxhProof {
+    TransactionStatus txStatus = 1;
+    repeated bytes multiSign =2;
+}
+
+message eventWrapper {
+    bool isBatch = 1;
+    uint64 index = 2;
+}
+
+message batchRequest {
+    repeated string froms = 1;
+    repeated uint64 indexs = 2;
+    repeated string serviceIDs = 3;
+    repeated IBTP.Type ibtpTypes = 4;
+    repeated content contents = 5;
+    repeated bxhProof proofs = 6;
+    repeated bool isEncrypted =7;
+}
+
+message batchReceipt {
+    repeated string tos = 1;
+    repeated uint64 indexs = 2;
+    repeated string serviceIDs = 3;
+    repeated IBTP.Type ibtpTypes = 4;
+    repeated result results = 5;
+    repeated bxhProof proofs = 6;
 }
