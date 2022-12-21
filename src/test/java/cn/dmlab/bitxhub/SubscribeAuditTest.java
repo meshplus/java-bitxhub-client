@@ -144,7 +144,6 @@ public class SubscribeAuditTest {
     }
 
     @Test
-    @Ignore
     public void subscribeAudit() throws InterruptedException {
         CountDownLatch asyncLatch = new CountDownLatch(1);
         StreamObserver<Broker.Response> observer = new StreamObserver<Broker.Response>() {
